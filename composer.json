@@ -1,0 +1,30 @@
+{
+  "name": "lishelun/hutphp",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Lishelun",
+      "email": "lishelun@qq.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "files": [
+      "src/common.php"
+    ],
+    "psr-4": {
+      "hutphp\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "hutphp\\Boot"
+      ],
+      "config": {
+        "storage": "src/config/storage.php"
+      }
+    }
+  }
+}
