@@ -1,5 +1,5 @@
 {
-  "name": "lishelun/hutphp",
+  "name": "hutcms/hutphp",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -8,7 +8,18 @@
       "email": "lishelun@qq.com"
     }
   ],
-  "require": {},
+  "require": {
+    "topthink/framework": "^6.0",
+    "topthink/think-captcha": "^3.0",
+    "topthink/think-multi-app": "^1.0",
+    "ext-iconv": "*",
+    "ext-gd": "*",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-mbstring": "*",
+    "firebase/php-jwt": "^5.4"
+  },
   "autoload": {
     "files": [
       "src/common.php"
