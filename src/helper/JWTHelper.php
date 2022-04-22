@@ -63,10 +63,10 @@ class JWTHelper extends Helper
     /**
      * 解密Token
      * @description：解密Token
-     * @param $jwtToken
+     * @param string $jwtToken
      * @return false|object
      */
-    public function decode($jwtToken): object|bool
+    public function decode(string $jwtToken): object|bool
     {
         try {
             return JWT::decode($jwtToken , $this->secret , array('HS256'));//进行解密算法

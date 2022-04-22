@@ -26,7 +26,7 @@ class QueryHelper extends Helper
         'max' , 'min' , 'avg' , 'count' , 'sum' ,
         'inc' , 'dec' ,
         'paginateX' , 'page' , 'paginate' ,
-        'selectOrFail' , 'findOrFail' , 'findOrEmpty' , 'getTable'
+        'selectOrFail' , 'findOrFail' , 'findOrEmpty' , 'getTable' , 'buildSql'
     ];
 
     /**
