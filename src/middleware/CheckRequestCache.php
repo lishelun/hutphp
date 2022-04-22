@@ -81,7 +81,7 @@ class CheckRequestCache
 
                 if (strtotime($request->server('HTTP_IF_MODIFIED_SINCE', '')) + $expire > $request->server('REQUEST_TIME')) {
                     // 读取缓存
-                    return Response::create()->code(304);
+                    return Response::create()->code(200);
                 } elseif (($hit = $this->cache->get($key)) !== null) {
                     [$content, $header, $when] = $hit;
                     if (null === $expire || $when + $expire > $request->server('REQUEST_TIME')) {
