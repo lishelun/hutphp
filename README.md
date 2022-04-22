@@ -1,7 +1,7 @@
 # HUTPHP
 **ThinkPHP V6.0 Development Library**
 
-**基于[https://gitee.com/zoujingli/ThinkLibrary精简改造**。
+**基于 **[Anyon](https://gitee.com/zoujingli) / [ThinkLibrary](https://gitee.com/zoujingli/ThinkLibrary)**精简改造**
 
 
 
