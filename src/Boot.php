@@ -20,8 +20,8 @@ class Boot extends Service
     {
         $this->app->event->listen('HttpRun' , function (Request $request) {
             $request->filter([function ($value) {
-                return is_string($value) ? xss_safe($value) : $value;
-            } , 'trim']);
+                return is_string($value) ? trim(xss_safe($value)) : $value;
+            }]);
             if ( $request->isCli() ) {
                 if ( empty($_SERVER['REQUEST_URI']) && isset($_SERVER['argv'][1]) ) {
                     $request->setPathinfo($_SERVER['argv'][1]);
@@ -59,9 +59,7 @@ class Boot extends Service
                     $header['Access-Control-Expose-Headers'] = 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
                     $header['Access-Control-Allow-Credentials'] = 'true';
                 }
-                if ( $request->isOptions() ) {
-                    return response()->code(204)->header($header);
-                } else if ( in_array(app()->http->getName() , app()->config->get('app.auth_app')) ) {
+                if ( in_array(app()->http->getName() , app()->config->get('app.auth_app',[])) ) {
                     if ( AdminService::instance()->checkPermissions() ) {
                         return $next($request)->header($header);
                     } else if ( AdminService::instance()->isLogin() ) {

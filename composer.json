@@ -26,7 +26,8 @@
       "src/common.php"
     ],
     "psr-4": {
-      "hutphp\\": "src"
+      "hutphp\\": "src/",
+      "think\\middleware\\": "src/middleware/"
     }
   },
   "extra": {
