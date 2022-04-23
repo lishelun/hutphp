@@ -62,27 +62,68 @@ class TableHelper extends Helper
     }
 
     /**
-     * 创建表
-     * @param string $pk   主键
-     * @param bool   $auto 是否自增
+     * 执行sql
+     * @param string $sql
+     * @param array  $params
      * @return bool
-     * @throws \think\db\exception\DbException
      */
-    public function createTable(string $pk = 'id' , bool $auto = true): bool
+    public function execute(string $sql , array $params = []): bool
     {
-        return DB::execute('CREATE TABLE IF NOT EXISTS `:table` (`:pk`  int NOT NULL :auto_increment ,PRIMARY KEY (`:pk`));' , ['table' => $this->table , 'pk' => $pk , 'auto_increment' => $auto ? 'AUTO_INCREMENT' : '']) !== 0;
+        if ( str_contains($sql , ':') ) {
+            return Db::execute($this->formatSql($sql , $params)) !== false;
+        } else {
+            return Db::execute($sql , $params) !== false;
+        }
     }
 
+    /**
+     * 创建表
+     * @param string    $pk     主键
+     * @param bool      $auto   是否自增
+     * @param string    $type   主键类型
+     * @param int|array $length 主键长度
+     * @return bool
+     */
+    public function createTable(string $pk = 'id' , bool $auto = true , string $type = 'int' , int|array $length = 0): bool
+    {
+        return $this->execute('CREATE TABLE IF NOT EXISTS `:table` (`:pk`  :type:length NOT NULL :auto_increment ,PRIMARY KEY (`:pk`));' , ['table' => $this->table , 'pk' => $pk , 'auto_increment' => $auto ? 'AUTO_INCREMENT' : '' , 'type' => $type ? $type : 'int' , 'length' => $this->getLengthSqlString($length , $type)]);
+    }
+
+    /**
+     * 格式化SQL
+     * @param string $sql
+     * @param array  $params
+     * @return string
+     */
+    public function formatSql(string $sql , array $params): string
+    {
+        if ( empty($params) || !str_contains($sql , ':') ) return $sql;
+        foreach ( $params as $key => $value ) {
+            $sql = str_replace(':' . $key , $value , $sql);
+        }
+        return $sql;
+    }
+
+    /**
+     * 获得长度SQL文本
+     * @param array|int $length
+     * @param string    $type
+     * @return string
+     */
+    public function getLengthSqlString(array|int $length = 0 , string $type = 'int'): string
+    {
+        if ( !$length ) return '';
+        return in_array($type , ['text' , 'mediumtext' , 'tinytext' , 'longtext' , 'date' , 'year' , 'tinyblob' , 'blob' , 'longblob' , 'mediumblob' , 'json' , 'geometrycollection' , 'multipolygon' , 'multilinestring' , 'multipoint' , 'geometry' , 'polygon' , '']) ? '' : (is_array($length) ? "(" . implode(',' , $length) . ")" : "({$length})");
+    }
 
     /**
      * 清空表
      * @param int $auto_increment
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function clearTable(int $auto_increment = 1): bool
     {
-        $result = Db::execute('TRUNCATE TABLE `:table`;' , ['table' => $this->table]) !== 0;
+        $result = $this->execute('TRUNCATE TABLE `:table`;' , ['table' => $this->table]);
         $this->setIncrement($auto_increment);
         $this->optimizeTable();
         return $result;
@@ -91,32 +132,29 @@ class TableHelper extends Helper
     /**
      * 删除表
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function removeTable(): bool
     {
-        return Db::execute('DROP TABLE IF EXISTS `:table`;' , ['table' => $this->table]) !== 0;
+        return $this->execute('DROP TABLE IF EXISTS `:table`;' , ['table' => $this->table]);
     }
 
     /**
      * 优化表
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function optimizeTable(): bool
     {
-        return Db::execute('OPTIMIZE table :table ;' , ['table' => $this->table]) !== 0;
+        return $this->execute('OPTIMIZE table :table ;' , ['table' => $this->table]) !== false;
     }
 
     /**
      * 设置自增值
      * @param int $increment
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function setIncrement(int $increment = 1): bool
     {
-        return Db::execute('ALTER TABLE :table AUTO_INCREMENT=:increment ;' , ['table' => $this->table , 'increment' => $increment]) !== 0;
+        return $this->execute('ALTER TABLE :table AUTO_INCREMENT=:increment ;' , ['table' => $this->table , 'increment' => $increment]);
     }
 
     /**
@@ -134,17 +172,14 @@ class TableHelper extends Helper
      * @param string    $order          排序规则
      * @param bool      $binary         二进制
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function addColumn(string $name , string $type = 'varchar' , array|int $length = 255 , bool $isnull = true , string $default = '' , bool $auto_increment = false , bool $unsigned = false , string $comment = '' , string $after = '' , string $charset = '' , string $order = '' , bool $binary = false): bool
     {
-        //特殊类型字段无需长度限制
-        $length = in_array($type , ['text' , 'mediumtext' , 'tinytext' , 'longtext' , 'date' , 'year' , 'tinyblob' , 'blob' , 'longblob' , 'mediumblob' , 'json' , 'geometrycollection' , 'multipolygon' , 'multilinestring' , 'multipoint' , 'geometry' , 'polygon' , '']) ? '' : $length;
         $bind = [
             'after' => $after ? " AFTER `{$after}`" : '' ,
             'charset' => $charset ? " CHARACTER SET {$charset}" : '' ,
             'order' => $order ? " COLLATE {$order}" : '' ,
-            'length' => $length ,
+            'length' => $this->getLengthSqlString($length , $type) ,
             'isnull' => $isnull ? ' NULL' : ' NOT NULL' ,
             'auto_increment' => $auto_increment ? ' AUTO_INCREMENT' : '' ,
             'unsigned' => $unsigned ? ' UNSIGNED' : '' ,
@@ -154,7 +189,7 @@ class TableHelper extends Helper
             'comment' => $comment ? "COMMENT '{$comment}'" : '' ,
             'binary' => $binary ? 'BINARY' : ''
         ];
-        return Db::execute('ALTER TABLE `:table` ADD COLUMN `:name`  :type:length :binary :charset :order :unsigned :isnull :after' , $bind) !== 0;
+        return $this->execute('ALTER TABLE `:table` ADD COLUMN `:name`  :type:length :binary :charset :order :unsigned :isnull :after' , $bind);
     }
 
     /**
@@ -172,17 +207,14 @@ class TableHelper extends Helper
      * @param string    $order          排序规则
      * @param bool      $binary         二进制
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function changeColumn(string $name , string $new_name = '' , string $type = 'varchar' , array|int $length = 255 , bool $isnull = true , string $default = '' , bool $auto_increment = false , bool $unsigned = false , string $comment = '' , string $after = '' , string $charset = '' , string $order = '' , bool $binary = false): bool
     {
-        //特殊类型字段无需长度限制
-        $length = in_array($type , ['text' , 'mediumtext' , 'tinytext' , 'longtext' , 'date' , 'year' , 'tinyblob' , 'blob' , 'longblob' , 'mediumblob' , 'json' , 'geometrycollection' , 'multipolygon' , 'multilinestring' , 'multipoint' , 'geometry' , 'polygon' , '']) ? '' : $length;
         $bind = [
             'after' => $after ? " AFTER `{$after}`" : '' ,
             'charset' => $charset ? " CHARACTER SET {$charset}" : '' ,
             'order' => $order ? " COLLATE {$order}" : '' ,
-            'length' => $length ,
+            'length' => $this->getLengthSqlString($length , $type) ,
             'isnull' => $isnull ? ' NULL' : ' NOT NULL' ,
             'auto_increment' => $auto_increment ? ' AUTO_INCREMENT' : '' ,
             'unsigned' => $unsigned ? ' UNSIGNED' : '' ,
@@ -194,18 +226,17 @@ class TableHelper extends Helper
             'new_name' => $new_name && $new_name != $name ? "`{$new_name}`" : '' ,
             'change' => $new_name ? 'CHANGE' : 'MODIFY'
         ];
-        return Db::execute('ALTER TABLE `:table` :change COLUMN `:name` :new_name  :type:length :binary :charset :order :unsigned :isnull :after' , $bind) !== 0;
+        return $this->execute('ALTER TABLE `:table` :change COLUMN `:name` :new_name  :type:length :binary :charset :order :unsigned :isnull :after' , $bind);
     }
 
     /**
      * 删除字段
      * @param string $name
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function removeColumn(string $name): bool
     {
-        return Db::execute('ALTER TABLE `:table` DROP COLUMN `name`;' , ['table' => $this->table , 'name' => $name]) !== 0;
+        return $this->execute('ALTER TABLE `:table` DROP COLUMN `name`;' , ['table' => $this->table , 'name' => $name]);
     }
 
     /**
@@ -215,31 +246,28 @@ class TableHelper extends Helper
      * @param string       $type       索引类型
      * @param string       $using      索引方法
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function addIndex(array|string $field , string $index_name = '' , string $type = 'NORMAL' , string $using = 'BTREE'): bool
     {
         $using = strtoupper($type) == 'FULLTEXT' ? '' : 'USING ' . $using;
         $bind = ['table' => $this->table , 'type' => $type , 'index_name' => $index_name ?: $this->getIndexName($field) , 'fields' => $this->getIndexFieldText($field) , 'using' => $using];
-        return Db::execute('ALTER TABLE `:table` ADD :type INDEX `:index_name` (:fields) :using ;' , $bind) !== 0;
+        return $this->execute('ALTER TABLE `:table` ADD :type INDEX `:index_name` (:fields) :using ;' , $bind);
     }
 
     /**
      * 按索引名删除索引
      * @param $name
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function removeIndex($name): bool
     {
-        return Db::execute('ALTER TABLE `:table` DROP INDEX `:name`;' , ['table' => $this->table , 'name' => $name]) !== 0;
+        return $this->execute('ALTER TABLE `:table` DROP INDEX `:name`;' , ['table' => $this->table , 'name' => $name]);
     }
 
     /**
      * 按字段删除索引
      * @param array|string $field
      * @return bool
-     * @throws \think\db\exception\DbException
      */
     public function removeIndexByField(array|string $field): bool
     {
