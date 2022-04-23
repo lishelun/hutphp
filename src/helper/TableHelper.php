@@ -7,6 +7,7 @@ namespace hutphp\helper;
 use hutphp\Controller;
 use hutphp\Helper;
 use think\App;
+use think\db\exception\DbException;
 use think\facade\Db;
 
 /**
@@ -69,6 +70,17 @@ class TableHelper extends Helper
      */
     public function execute(string $sql , array $params = []): bool
     {
+        if(!env('APP_DEBUG')){
+            try{
+                if ( str_contains($sql , ':') ) {
+                    return Db::execute($this->formatSql($sql , $params)) !== false;
+                } else {
+                    return Db::execute($sql , $params) !== false;
+                }
+            }catch (DbException $e){
+                return false;
+            }
+        }
         if ( str_contains($sql , ':') ) {
             return Db::execute($this->formatSql($sql , $params)) !== false;
         } else {
