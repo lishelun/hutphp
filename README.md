@@ -163,16 +163,25 @@ JWTHelper::instance()->decode($jwtToken);//:object|bool
 
 ```php
 use hutphp\helper\TableHelper;
+//初始化表助手
 $table=TableHelper::instance()->init('SomeTableName');
+//创建表
 $table->createTable('id',true);
+//删除表
 $table->removeTable();
+//清空表
 $table->clearTable(auto_increment: int=1);
+//优化表
 $table->optimizeTable();
+//添加字段
 $table->addColumn(name,type,length,isnull,defaultval,auto_increment,unsigned,comment,after,charset,order,binary);
+//删除字段
 $table->removeColumn(name);
-$table->changeColumn(name,new_name ,type,length,isnull,defaultval,auto_increment,unsigned,comment,after,charset,order,binary)
-$table->addIndex('name'/*or [name1,name2]*/);
+//修改字段
+$table->changeColumn(name,new_name ,type,length,isnull,defaultval,auto_increment,unsigned,comment,after,charset,order,binary);
+//添加索引
+$table->addIndex('field'/*or [field1,field2]*/);
+//删除索引
 $table->removeIndex(index_name);
-$table->removeIndexByField('name'/*or [name1,name2]*/);
 ```
 
