@@ -70,15 +70,16 @@ class TableHelper extends Helper
      */
     public function execute(string $sql , array $params = []): bool
     {
-        try{
+        try {
             if ( str_contains($sql , ':') ) {
                 return Db::execute($this->formatSql($sql , $params)) !== false;
             } else {
                 return Db::execute($sql , $params) !== false;
             }
-        }catch (DbException $e){
+        } catch (DbException $e) {
             return false;
         }
+
     }
 
     /**
@@ -104,8 +105,9 @@ class TableHelper extends Helper
     {
         if ( empty($params) || !str_contains($sql , ':') ) return $sql;
         foreach ( $params as $key => $value ) {
-            $sql = str_replace(':' . $key , $value , $sql);
+            $sql = str_replace(':' . $key , (string)$value , $sql);
         }
+        echo $sql;
         return $sql;
     }
 
@@ -149,7 +151,7 @@ class TableHelper extends Helper
      */
     public function optimizeTable(): bool
     {
-        return $this->execute('OPTIMIZE table :table ;' , ['table' => $this->table]) !== false;
+        return $this->execute('OPTIMIZE TABLE :table' , ['table' => $this->table]) !== false;
     }
 
     /**
@@ -159,7 +161,7 @@ class TableHelper extends Helper
      */
     public function setIncrement(int $increment = 1): bool
     {
-        return $this->execute('ALTER TABLE :table AUTO_INCREMENT=:increment ;' , ['table' => $this->table , 'increment' => $increment]);
+        return $this->execute('ALTER TABLE :table AUTO_INCREMENT=:increment' , ['table' => $this->table , 'increment' => $increment]);
     }
 
     /**
@@ -188,13 +190,14 @@ class TableHelper extends Helper
             'isnull' => $isnull ? ' NULL' : ' NOT NULL' ,
             'auto_increment' => $auto_increment ? ' AUTO_INCREMENT' : '' ,
             'unsigned' => $unsigned ? ' UNSIGNED' : '' ,
-            'default' => $default ? "DEFAULT '{$default}'" : '' ,
+            'default' => strlen($default) > 0 ? "DEFAULT '{$default}' " : '' ,
             'table' => $this->table ,
             'name' => $name ,
             'comment' => $comment ? "COMMENT '{$comment}'" : '' ,
-            'binary' => $binary ? 'BINARY' : ''
+            'binary' => $binary ? 'BINARY' : '' ,
+            'type' => $type
         ];
-        return $this->execute('ALTER TABLE `:table` ADD COLUMN `:name`  :type:length :binary :charset :order :unsigned :isnull :after' , $bind);
+        return $this->execute('ALTER TABLE `:table` ADD COLUMN `:name`  :type:length :binary :charset :order :unsigned :default :isnull :comment :after' , $bind);
     }
 
     /**
@@ -223,15 +226,16 @@ class TableHelper extends Helper
             'isnull' => $isnull ? ' NULL' : ' NOT NULL' ,
             'auto_increment' => $auto_increment ? ' AUTO_INCREMENT' : '' ,
             'unsigned' => $unsigned ? ' UNSIGNED' : '' ,
-            'default' => $default ? "DEFAULT '{$default}'" : '' ,
+            'default' => strlen($default) > 0 ? "DEFAULT '{$default}' " : '' ,
             'table' => $this->table ,
             'name' => $name ,
             'comment' => $comment ? "COMMENT '{$comment}'" : '' ,
             'binary' => $binary ? 'BINARY' : '' ,
+            'type' => $type ,
             'new_name' => $new_name && $new_name != $name ? "`{$new_name}`" : '' ,
             'change' => $new_name ? 'CHANGE' : 'MODIFY'
         ];
-        return $this->execute('ALTER TABLE `:table` :change COLUMN `:name` :new_name  :type:length :binary :charset :order :unsigned :isnull :after' , $bind);
+        return $this->execute('ALTER TABLE `:table` :change COLUMN `:name` :new_name  :type:length :binary :charset :order :unsigned :default :isnull :comment :after' , $bind);
     }
 
     /**
@@ -241,7 +245,7 @@ class TableHelper extends Helper
      */
     public function removeColumn(string $name): bool
     {
-        return $this->execute('ALTER TABLE `:table` DROP COLUMN `name`;' , ['table' => $this->table , 'name' => $name]);
+        return $this->execute('ALTER TABLE `:table` DROP COLUMN `:name`;' , ['table' => $this->table , 'name' => $name]);
     }
 
     /**
@@ -255,28 +259,19 @@ class TableHelper extends Helper
     public function addIndex(array|string $field , string $index_name = '' , string $type = 'NORMAL' , string $using = 'BTREE'): bool
     {
         $using = strtoupper($type) == 'FULLTEXT' ? '' : 'USING ' . $using;
+        $type = $type == 'NORMAL' ? '' : $type;
         $bind = ['table' => $this->table , 'type' => $type , 'index_name' => $index_name ?: $this->getIndexName($field) , 'fields' => $this->getIndexFieldText($field) , 'using' => $using];
         return $this->execute('ALTER TABLE `:table` ADD :type INDEX `:index_name` (:fields) :using ;' , $bind);
     }
 
     /**
-     * 按索引名删除索引
-     * @param $name
+     * 按索引名/字段删除索引
+     * @param array|string $field string为索引名，array为字段
      * @return bool
      */
-    public function removeIndex($name): bool
+    public function removeIndex(array|string $field): bool
     {
-        return $this->execute('ALTER TABLE `:table` DROP INDEX `:name`;' , ['table' => $this->table , 'name' => $name]);
-    }
-
-    /**
-     * 按字段删除索引
-     * @param array|string $field
-     * @return bool
-     */
-    public function removeIndexByField(array|string $field): bool
-    {
-        return $this->removeIndex($this->getIndexName($field));
+        return $this->execute('ALTER TABLE `:table` DROP INDEX `:name`;' , ['table' => $this->table , 'name' => $this->getIndexName($field)]);
     }
 
     /**
@@ -292,7 +287,7 @@ class TableHelper extends Helper
             } , $field);
             sort($field);
         }
-        return is_string($field) ? 'hut_' . $field : 'hut_' . implode('_' , $field);
+        return is_string($field) && !str_contains($field , 'hut_') ? 'hut_' . $field : 'hut_' . implode('_' , $field);
     }
 
     /**
