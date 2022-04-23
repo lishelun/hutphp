@@ -70,21 +70,14 @@ class TableHelper extends Helper
      */
     public function execute(string $sql , array $params = []): bool
     {
-        if(!env('APP_DEBUG')){
-            try{
-                if ( str_contains($sql , ':') ) {
-                    return Db::execute($this->formatSql($sql , $params)) !== false;
-                } else {
-                    return Db::execute($sql , $params) !== false;
-                }
-            }catch (DbException $e){
-                return false;
+        try{
+            if ( str_contains($sql , ':') ) {
+                return Db::execute($this->formatSql($sql , $params)) !== false;
+            } else {
+                return Db::execute($sql , $params) !== false;
             }
-        }
-        if ( str_contains($sql , ':') ) {
-            return Db::execute($this->formatSql($sql , $params)) !== false;
-        } else {
-            return Db::execute($sql , $params) !== false;
+        }catch (DbException $e){
+            return false;
         }
     }
 
