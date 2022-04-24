@@ -83,16 +83,18 @@ class TableHelper extends Helper
     }
 
     /**
-     * 创建表
      * @param string    $pk     主键
      * @param bool      $auto   是否自增
      * @param string    $type   主键类型
      * @param int|array $length 主键长度
+     * @param string    $engine 引擎 默认InnoDB
+     * @param string    $charset 字符集
+     * @param string    $order   排序规则
      * @return bool
      */
-    public function createTable(string $pk = 'id' , bool $auto = true , string $type = 'int' , int|array $length = 0): bool
+    public function createTable(string $pk = 'id' , bool $auto = true , string $type = 'int' , int|array $length = 0 , string $engine = 'InnoDB',string $charset='',string $order=''): bool
     {
-        return $this->execute('CREATE TABLE IF NOT EXISTS `:table` (`:pk`  :type:length NOT NULL :auto_increment ,PRIMARY KEY (`:pk`));' , ['table' => $this->table , 'pk' => $pk , 'auto_increment' => $auto ? 'AUTO_INCREMENT' : '' , 'type' => $type ? $type : 'int' , 'length' => $this->getLengthSqlString($length , $type)]);
+        return $this->execute('CREATE TABLE IF NOT EXISTS `:table` (`:pk`  :type:length NOT NULL :auto_increment ,PRIMARY KEY (`:pk`)) :engine :charset :order;' , ['table' => $this->table , 'pk' => $pk , 'auto_increment' => $auto ? 'AUTO_INCREMENT' : '' , 'type' => $type ? $type : 'int' , 'length' => $this->getLengthSqlString($length , $type) , 'engine' => $engine ? 'ENGINE=' . $engine : '','charset'=>$charset?"CHARACTER SET={$charset}":'','order'=>$charset&&$order?"COLLATE={$order}":'']);
     }
 
     /**
@@ -259,8 +261,16 @@ class TableHelper extends Helper
     {
         $using = strtoupper($type) == 'FULLTEXT' ? '' : 'USING ' . $using;
         $type = $type == 'NORMAL' ? '' : $type;
-        $bind = ['table' => $this->table , 'type' => $type , 'index_name' => $index_name ?: $this->getIndexName($field) , 'fields' => $this->getIndexFieldText($field) , 'using' => $using];
-        return $this->execute('ALTER TABLE `:table` ADD :type INDEX `:index_name` (:fields) :using ;' , $bind);
+        $extend = strtoupper($type) == 'FULLTEXT' ? ' with parser ngram ' : '';
+        $bind = [
+            'table' => $this->table ,
+            'type' => $type ,
+            'index_name' => $index_name ?: $this->getIndexName($field) ,
+            'fields' => $this->getIndexFieldText($field) ,
+            'extend'=>$extend,
+            'using' => $using
+        ];
+        return $this->execute('ALTER TABLE `:table` ADD :type INDEX `:index_name` (:fields) :extend :using ;' , $bind);
     }
 
     /**

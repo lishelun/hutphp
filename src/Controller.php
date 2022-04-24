@@ -17,8 +17,8 @@ use think\Request;
 
 class Controller extends \stdClass
 {
-    public bool $csrf_state = false;
-    public string $csrf_text = '';
+    public bool $csrf = false;
+    public string $csrf_message = 'csrf error!';
     protected App $app;
     protected Request $request;
     /**
