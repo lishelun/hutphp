@@ -10,51 +10,89 @@
  *  | Author: lishelun <lishelun@qq.com>
  * +----------------------------------------------------------------------
  */
+if ( !function_exists('syslog') ) {
+    /**
+     * 写入系统日志
+     * @param string      $type    日志类型
+     * @param string|null $content 日志内容
+     * @return mixed
+     */
+    function syslog(string $type , ?string $content = null): bool
+    {
 
-/**
- * 写入系统日志
- * @param string $type    日志类型
- * @param string $content 日志内容
- * @return bool
- */
-function hutlog(string $type , string $content): bool
-{
-
-    $log = [
-        'node' => NodeService::instance()->getCurrent() ,
-        '$type' => $$type , 'content' => $content ,
-        'ip' => request()->ip() ?: '127.0.0.1' ,
-        'port' => request()->port() ,
-        'username' => AdminService::instance()->getUserName() ?: '-' ,
-        'create_at' => time() ,
-    ];
-    //to do...
-    return false;
+        $log = [
+            'node' => \hutphp\service\NodeService::instance()->getCurrent() ,
+            '$type' => $$type , 'content' => $content ,
+            'ip' => request()->ip() ?: '127.0.0.1' ,
+            'port' => request()->port() ,
+            'username' => \hutphp\service\AdminService::instance()->getUserName() ?: '-' ,
+            'create_at' => time() ,
+        ];
+        //to do...
+        return false;
+    }
 }
+if ( !function_exists('sysvar') ) {
+    /**
+     * 系统变量
+     * @param string $name
+     * @param string $value
+     * @return void
+     */
+    function sysvar(string $name , ?string $value = null): bool|array|string
+    {
 
-/**
- * 系统配置
- * @param string|null $name
- * @param string|null $value
- * @return string|array|bool
- */
-function hutconf(string $name = null , string $value = null): bool|array|string
-{
-
-    return false;
+    }
 }
+if ( !function_exists('sysconf') ) {
+    /**
+     * 系统配置
+     * @param string|null $name
+     * @param string|null $value
+     * @return string|array|bool
+     */
+    function sysconf(string $name = null , ?string $value = null): bool|array|string
+    {
 
-
+        return false;
+    }
+}
+if ( !function_exists('sysuri') ) {
+    /**
+     * 生成最短 URL 地址
+     * @param string         $url    路由地址
+     * @param array          $vars   PATH 变量
+     * @param boolean|string $suffix 后缀
+     * @param boolean|string $domain 域名
+     * @return string
+     */
+    function sysuri(string $url = '' , array $vars = [] , bool|string $suffix = false , bool|string $domain = false): string
+    {
+        $ext = app()->config->get('route.url_html_suffix' , 'html');
+        $pre = app()->route->buildUrl('@')->suffix(false)->domain($domain)->build();
+        $uri = app()->route->buildUrl($url , $vars)->suffix($suffix)->domain($domain)->build();
+        // 默认节点配置数据
+        $app = app()->config->get('app.default_app');
+        $controller = \think\helper\Str::snake(app()->config->get('route.default_controller'));
+        $action = \think\helper\Str::lower(app()->config->get('route.default_action'));
+        // 替换省略链接路径
+        return preg_replace([
+            "#^({$pre}){$app}/{$controller}/{$action}(\.{$ext}|^\w|\?|$)?#i" ,
+            "#^({$pre}[\w\.]+)/{$controller}/{$action}(\.{$ext}|^\w|\?|$)#i" ,
+            "#^({$pre}[\w\.]+)(/[\w\.]+)/{$action}(\.{$ext}|^\w|\?|$)#i" ,
+        ] , ['$1$2' , '$1$2' , '$1$2$3'] , $uri);
+    }
+}
 if ( !function_exists('virtual_model') ) {
     function virtual_model(string $name , array $data = [] , string $con = ''): \think\Model
     {
         return \hutphp\VirtualModel::create($name , $data , $con);
     }
 }
-if ( !function_exists('Model') ) {
+if ( !function_exists('M') ) {
     function Model(string $name , array $data = [] , string $con = ''): \think\Model
     {
-        if ( strpos($name , '\\') !== false ) {
+        if ( str_contains($name , '\\') ) {
             if ( class_exists($name) ) return new $name($data);
             $name = basename(str_replace('\\' , '//' , $name));
         }
@@ -66,7 +104,16 @@ if ( !function_exists('Model') ) {
         }
     }
 }
-if ( !function_exists('put_debug') ) {
+if ( !function_exists('auth') ) {
+    /**
+     * @throws \ReflectionException
+     */
+    function auth(?string $node=null): bool
+    {
+        return \hutphp\service\AdminService::instance()->checkPermissions($node);
+    }
+}
+if ( !function_exists('p') ) {
     /**
      * 打印输出数据到日志文件
      * @param object|array|string $data 打印内容
@@ -74,9 +121,9 @@ if ( !function_exists('put_debug') ) {
      * @param string|null         $file 文件路径名称
      * @return false|int
      */
-    function put_debug(object|array|string $data , bool $new = false , ?string $file = null): bool|int
+    function p(object|array|string $data , bool $new = false , ?string $file = null): bool|int
     {
-        if ( is_null($file) ) $file = app()->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log';
+        if ( is_null($file) ) $file = app()->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR .'debug_'. date('Ymd') . '.log';
         $str = (is_string($data) ? $data : ((is_array($data) || is_object($data)) ? print_r($data , true) : var_export($data , true))) . PHP_EOL;
         return $new ? file_put_contents($file , $str) : file_put_contents($file , $str , FILE_APPEND);
     }
@@ -194,7 +241,7 @@ if ( !function_exists('data_save') ) {
             }
         }
         $model = $query->findOrEmpty();
-        $method = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
+        $method = $model->isExists() ? 'onUpdate' : 'onInsert';
         if ( $model->save($data) === false ) return false;
         if ( $model instanceof \hutphp\Model && is_callable([$model , $method]) ) {
             $model->$method(strval($model[$pk] ?? ''));
@@ -705,54 +752,7 @@ if ( !function_exists('db') ) {
         return $query;
     }
 }
-if ( !function_exists('query') ) {
-    /**
-     * QueryHelper数据库查询对象
-     * @param            $query
-     * @param array|null $data
-     * @return \hutphp\helper\QueryHelper
-     */
-    function query($query , array $data = null): \hutphp\helper\QueryHelper
-    {
-        return \hutphp\helper\QueryHelper::instance()->init($query , $data);
-    }
-}
-if ( !function_exists('throw_error') ) {
-    /**
-     * 抛出异常
-     * @throws \Exception
-     */
-    function throw_error(string $string , int $code = 0)
-    {
-        throw new Exception($string , $code);
-    }
-}
-if ( !function_exists('sysuri') ) {
-    /**
-     * 生成最短 URL 地址
-     * @param string         $url    路由地址
-     * @param array          $vars   PATH 变量
-     * @param boolean|string $suffix 后缀
-     * @param boolean|string $domain 域名
-     * @return string
-     */
-    function sysuri(string $url = '' , array $vars = [] , bool|string $suffix = false , bool|string $domain = false): string
-    {
-        $ext = app()->config->get('route.url_html_suffix' , 'html');
-        $pre = app()->route->buildUrl('@')->suffix(false)->domain($domain)->build();
-        $uri = app()->route->buildUrl($url , $vars)->suffix($suffix)->domain($domain)->build();
-        // 默认节点配置数据
-        $app = app()->config->get('app.default_app');
-        $controller = \think\helper\Str::snake(app()->config->get('route.default_controller'));
-        $action = \think\helper\Str::lower(app()->config->get('route.default_action'));
-        // 替换省略链接路径
-        return preg_replace([
-            "#^({$pre}){$app}/{$controller}/{$action}(\.{$ext}|^\w|\?|$)?#i" ,
-            "#^({$pre}[\w\.]+)/{$controller}/{$action}(\.{$ext}|^\w|\?|$)#i" ,
-            "#^({$pre}[\w\.]+)(/[\w\.]+)/{$action}(\.{$ext}|^\w|\?|$)#i" ,
-        ] , ['$1$2' , '$1$2' , '$1$2$3'] , $uri);
-    }
-}
+
 if ( !function_exists('vali') ) {
     /**
      * 快速验证
@@ -772,7 +772,7 @@ if ( !function_exists('systoken') ) {
      * @param null|string $node
      * @return string
      */
-    function systoken(?string $node = null): string
+    function token(?string $node = null): string
     {
         $result = \hutphp\service\TokenService::instance()->buildFormToken($node);
         return $result['token'] ?? '';
@@ -784,7 +784,7 @@ if ( !function_exists('systoken_check') ) {
      * @param bool $return
      * @return bool
      */
-    function systoken_check(bool $return = false): bool
+    function token_check(bool $return = false): bool
     {
         return \hutphp\helper\TokenHelper::instance()->init($return);
     }
@@ -865,5 +865,16 @@ if (!function_exists('storage')) {
     function storage(string $type=null): \hutphp\Storage
     {
         return \hutphp\Storage::instance($type);
+    }
+}
+if(!function_exists('table')){
+    /**
+     * 数据表助手
+     * @param string $name
+     * @return \hutphp\helper\TableHelper
+     */
+    function table(string $name): \hutphp\helper\TableHelper
+    {
+        return \hutphp\helper\TableHelper::instance()->init($name);
     }
 }

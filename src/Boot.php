@@ -10,7 +10,6 @@ use think\middleware\LoadLangPack;
 use think\middleware\SessionInit;
 use think\Request;
 use think\Service;
-use function Composer\Autoload\includeFile;
 
 class Boot extends Service
 {
@@ -59,17 +58,23 @@ class Boot extends Service
                     $header['Access-Control-Expose-Headers'] = 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
                     $header['Access-Control-Allow-Credentials'] = 'true';
                 }
-                if ( in_array(app()->http->getName() , app()->config->get('app.auth_app',[])) ) {
-                    if ( AdminService::instance()->checkPermissions() ) {
+                if ( in_array(app()->http->getName() , app()->config->get('app.auth_app' , [])) ) {
+
+                    $check = app()->http->getName() . '@' . $request->controller(true) . '/' . $request->action(true);
+                    //排除验证
+                    if ( in_array(strtolower($check) , array_map(function ($val) {
+                        return strtolower($val);
+                    } , app()->config->get('app.deny_auth_list'))) ) {
                         return $next($request)->header($header);
-                    } else if ( AdminService::instance()->isLogin() ) {
-                        return json(['code' => 1001 , 'message' => lang('hutphp_not_auth')])->header($header);
-                    } else {
-                        return json(['code' => 1002 , 'message' => lang('hutphp_not_login')])->header($header);
+                    } else if ( AdminService::instance()->isLogin() == false ) {
+                        //未登录
+                        return json(['code' => 4001 , 'message' => lang('hutphp_not_login')])->header($header);
+                    } else if ( AdminService::instance()->checkPermissions() == false ) {
+                        //未授权
+                        return json(['code' => 4002 , 'message' => lang('hutphp_not_auth')])->header($header);
                     }
-                } else {
-                    return $next($request)->header($header);
                 }
+                return $next($request)->header($header);
             } , 'route');
         }
     }
