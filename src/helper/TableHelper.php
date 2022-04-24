@@ -107,7 +107,6 @@ class TableHelper extends Helper
         foreach ( $params as $key => $value ) {
             $sql = str_replace(':' . $key , (string)$value , $sql);
         }
-        echo $sql;
         return $sql;
     }
 
