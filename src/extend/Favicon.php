@@ -7,9 +7,9 @@ use hutphp\Exception;
 
 /**
  * 网站 ICO 文件生成工具
- * Class FaviconExtend
+ * Class Favicon
  */
-class FaviconExtend
+class Favicon
 {
     /**
      * 转换后的 BMP 图像
@@ -54,7 +54,7 @@ class FaviconExtend
      * @param array $size 图像文件尺寸
      * @throws \hutphp\Exception
      */
-    public function addImage(string $file, array $size = []): FaviconExtend
+    public function addImage(string $file, array $size = []): Favicon
     {
         if (false === ($im = $this->loadImageFile($file))) {
             throw new Exception('Read picture file Failed.');

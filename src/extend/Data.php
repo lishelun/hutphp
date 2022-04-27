@@ -5,10 +5,10 @@ namespace hutphp\extend;
 
 /**
  * 数据处理扩展
- * Class DataExtend
+ * Class Data
  * @package hutphp\extend
  */
-class DataExtend
+class Data
 {
 
     /**

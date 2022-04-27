@@ -5,10 +5,10 @@ namespace hutphp\extend;
 
 /**
  * 随机数码管理扩展
- * Class CodeExtend
+ * Class Code
  * @package hutphp\extend
  */
-class CodeExtend
+class Code
 {
     /**
      * 获取随机字符串编码

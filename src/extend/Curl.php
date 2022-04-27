@@ -3,7 +3,7 @@ declare (strict_types=1);
 
 namespace hutphp\extend;
 
-class HttpExtend
+class Curl
 {
     /**
      * 以 GET 模拟网络请求
@@ -43,7 +43,7 @@ class HttpExtend
      */
     public static function submit(string $url, array $data = [], array $file = [], array $header = [], string $method = 'POST', bool $returnHeader = true): bool|string
     {
-        [$line, $boundary] = [[], CodeExtend::random(18)];
+        [$line, $boundary] = [[], Code::random(18)];
         foreach ($data as $key => $value) {
             $line[] = "--{$boundary}";
             $line[] = "Content-Disposition: form-data; name=\"{$key}\"";

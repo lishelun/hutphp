@@ -10,54 +10,7 @@
  *  | Author: lishelun <lishelun@qq.com>
  * +----------------------------------------------------------------------
  */
-if ( !function_exists('syslog') ) {
-    /**
-     * 写入系统日志
-     * @param string      $type    日志类型
-     * @param string|null $content 日志内容
-     * @return mixed
-     */
-    function syslog(string $type , ?string $content = null): bool
-    {
-
-        $log = [
-            'node' => \hutphp\service\NodeService::instance()->getCurrent() ,
-            '$type' => $$type , 'content' => $content ,
-            'ip' => request()->ip() ?: '127.0.0.1' ,
-            'port' => request()->port() ,
-            'username' => \hutphp\service\AdminService::instance()->getUserName() ?: '-' ,
-            'create_at' => time() ,
-        ];
-        //to do...
-        return false;
-    }
-}
-if ( !function_exists('sysvar') ) {
-    /**
-     * 系统变量
-     * @param string $name
-     * @param string $value
-     * @return void
-     */
-    function sysvar(string $name , ?string $value = null): bool|array|string
-    {
-
-    }
-}
-if ( !function_exists('sysconf') ) {
-    /**
-     * 系统配置
-     * @param string|null $name
-     * @param string|null $value
-     * @return string|array|bool
-     */
-    function sysconf(string $name = null , ?string $value = null): bool|array|string
-    {
-
-        return false;
-    }
-}
-if ( !function_exists('sysuri') ) {
+if ( !function_exists('uri') ) {
     /**
      * 生成最短 URL 地址
      * @param string         $url    路由地址
@@ -66,7 +19,7 @@ if ( !function_exists('sysuri') ) {
      * @param boolean|string $domain 域名
      * @return string
      */
-    function sysuri(string $url = '' , array $vars = [] , bool|string $suffix = false , bool|string $domain = false): string
+    function uri(string $url = '' , array $vars = [] , bool|string $suffix = false , bool|string $domain = false): string
     {
         $ext = app()->config->get('route.url_html_suffix' , 'html');
         $pre = app()->route->buildUrl('@')->suffix(false)->domain($domain)->build();
@@ -108,7 +61,7 @@ if ( !function_exists('auth') ) {
     /**
      * @throws \ReflectionException
      */
-    function auth(?string $node=null): bool
+    function auth(?string $node = null): bool
     {
         return \hutphp\service\AdminService::instance()->checkPermissions($node);
     }
@@ -123,7 +76,7 @@ if ( !function_exists('p') ) {
      */
     function p(object|array|string $data , bool $new = false , ?string $file = null): bool|int
     {
-        if ( is_null($file) ) $file = app()->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR .'debug_'. date('Ymd') . '.log';
+        if ( is_null($file) ) $file = app()->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . 'debug_' . date('Ymd') . '.log';
         $str = (is_string($data) ? $data : ((is_array($data) || is_object($data)) ? print_r($data , true) : var_export($data , true))) . PHP_EOL;
         return $new ? file_put_contents($file , $str) : file_put_contents($file , $str , FILE_APPEND);
     }
@@ -199,7 +152,7 @@ if ( !function_exists('http_get') ) {
      */
     function http_get(string $url , array|string $query = [] , array $options = []): bool|string
     {
-        return \hutphp\extend\HttpExtend::get($url , $query , $options);
+        return \hutphp\extend\Curl::get($url , $query , $options);
     }
 }
 if ( !function_exists('http_post') ) {
@@ -212,7 +165,7 @@ if ( !function_exists('http_post') ) {
      */
     function http_post(string $url , array|string $data = [] , array $options = []): bool|string
     {
-        return \hutphp\extend\HttpExtend::post($url , $data , $options);
+        return \hutphp\extend\Curl::post($url , $data , $options);
     }
 }
 if ( !function_exists('data_save') ) {
@@ -518,7 +471,7 @@ if ( !function_exists('safe64_encode') ) {
      */
     function safe64_encode(string $text): string
     {
-        return \hutphp\extend\CodeExtend::enSafe64($text);
+        return \hutphp\extend\Code::enSafe64($text);
     }
 }
 if ( !function_exists('safe64_decode') ) {
@@ -529,7 +482,7 @@ if ( !function_exists('safe64_decode') ) {
      */
     function safe64_decode(string $text): string
     {
-        return \hutphp\extend\CodeExtend::deSafe64($text);
+        return \hutphp\extend\Code::deSafe64($text);
     }
 }
 if ( !function_exists('ssl_encode') ) {
@@ -539,21 +492,21 @@ if ( !function_exists('ssl_encode') ) {
      * @param string $key
      * @return string
      */
-    function ssl_encode(mixed $data,string $key=''): string
+    function ssl_encode(mixed $data , string $key = ''): string
     {
-        return \hutphp\extend\CodeExtend::encrypt($data,$key);
+        return \hutphp\extend\Code::encrypt($data , $key);
     }
 }
 if ( !function_exists('ssl_decode') ) {
     /**
      * 数据解密处理
-     * @param string  $data
+     * @param string $data
      * @param string $key
      * @return string
      */
-    function ssl_decode(string $data,string $key=''): string
+    function ssl_decode(string $data , string $key = ''): string
     {
-        return \hutphp\extend\CodeExtend::decrypt($data,$key);
+        return \hutphp\extend\Code::decrypt($data , $key);
     }
 }
 if ( !function_exists('utf8_encode') ) {
@@ -564,7 +517,7 @@ if ( !function_exists('utf8_encode') ) {
      */
     function utf8_encode(string $content): string
     {
-        return \hutphp\extend\CodeExtend::utf8Encode($content);
+        return \hutphp\extend\Code::utf8Encode($content);
     }
 }
 if ( !function_exists('utf8_decode') ) {
@@ -575,31 +528,31 @@ if ( !function_exists('utf8_decode') ) {
      */
     function utf8_decode(string $content): string
     {
-        return hutphp\extend\CodeExtend::utf8Decode($content);
+        return hutphp\extend\Code::utf8Decode($content);
     }
 }
 if ( !function_exists('uniqid_number') ) {
     /**
      * 唯一数字编码
-     * @param integer $size 编码长度
-     * @param string $prefix 编码前缀
+     * @param integer $size   编码长度
+     * @param string  $prefix 编码前缀
      * @return string
      */
     function uniqid_number(int $size = 12 , string $prefix = ''): string
     {
-        return \hutphp\extend\CodeExtend::uniqidNumber($size , $prefix);
+        return \hutphp\extend\Code::uniqidNumber($size , $prefix);
     }
 }
 if ( !function_exists('uniqid_date') ) {
     /**
      * 唯一日期编码
-     * @param integer $size 编码长度
-     * @param string $prefix 编码前缀
+     * @param integer $size   编码长度
+     * @param string  $prefix 编码前缀
      * @return string
      */
     function uniqid_date(int $size = 16 , string $prefix = ''): string
     {
-        return \hutphp\extend\CodeExtend::uniqidDate($size , $prefix);
+        return \hutphp\extend\Code::uniqidDate($size , $prefix);
     }
 }
 if ( !function_exists('random') ) {
@@ -612,7 +565,7 @@ if ( !function_exists('random') ) {
      */
     function random(int $size = 10 , int $type = 1 , string $prefix = ''): string
     {
-        return \hutphp\extend\CodeExtend::random($size , $type , $prefix);
+        return \hutphp\extend\Code::random($size , $type , $prefix);
     }
 }
 if ( !function_exists('dispatch') ) {
@@ -842,7 +795,7 @@ if ( !function_exists('str_contains') ) {
         return false;
     }
 }
-if (!function_exists('xss_safe')) {
+if ( !function_exists('xss_safe') ) {
     /**
      * 文本内容XSS过滤
      * @param string $text
@@ -850,11 +803,11 @@ if (!function_exists('xss_safe')) {
      */
     function xss_safe(string $text): string
     {
-        $rules = ['#<script.*?<\/script>#is' => '', '#(\s)on(\w+=\S)#i' => '$1οn$2'];
-        return preg_replace(array_keys($rules), array_values($rules), trim($text));
+        $rules = ['#<script.*?<\/script>#is' => '' , '#(\s)on(\w+=\S)#i' => '$1οn$2'];
+        return preg_replace(array_keys($rules) , array_values($rules) , trim($text));
     }
 }
-if (!function_exists('storage')) {
+if ( !function_exists('storage') ) {
     /**
      * 文本内容XSS过滤
      * @param string|null $type
@@ -862,12 +815,12 @@ if (!function_exists('storage')) {
      * @throws \Exception
      * @example  storage('local')->set($name,$file);
      */
-    function storage(string $type=null): \hutphp\Storage
+    function storage(string $type = null): \hutphp\Storage
     {
         return \hutphp\Storage::instance($type);
     }
 }
-if(!function_exists('table')){
+if ( !function_exists('table') ) {
     /**
      * 数据表助手
      * @param string $name

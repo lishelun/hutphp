@@ -4,7 +4,7 @@ declare (strict_types=1);
 
 namespace hutphp\service;
 
-use hutphp\extend\DataExtend;
+use hutphp\extend\Data;
 use hutphp\Service;
 
 /**
@@ -115,7 +115,7 @@ class AdminService extends Service
             $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checks)];
             $nodes[$pnode] = ['node' => $pnode, 'title' => ucfirst($pnode), 'pnode' => '', 'checked' => in_array($pnode, $checks)];
         }
-        return DataExtend::arr2tree(array_reverse($nodes), 'node', 'pnode', '_sub_');
+        return Data::arr2tree(array_reverse($nodes), 'node', 'pnode', '_sub_');
     }
 
     /**

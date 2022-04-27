@@ -5,10 +5,10 @@ namespace hutphp\extend;
 
 /**
  * 导出 CSV 文件扩展
- * Class ExcelExtend
+ * Class Excel
  * @package hutphp\extend
  */
-class ExcelExtend
+class Excel
 {
 
     /**

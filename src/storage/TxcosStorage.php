@@ -5,7 +5,7 @@ declare (strict_types=1);
 namespace hutphp\storage;
 
 use hutphp\Exception;
-use hutphp\extend\HttpExtend;
+use hutphp\extend\Curl;
 use hutphp\Storage;
 
 /**
@@ -93,7 +93,7 @@ class TxcosStorage extends Storage
         }
         $data['success_action_status'] = '200';
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
-        if (is_numeric(stripos(HttpExtend::submit($this->upload(), $data, $file), '200 OK'))) {
+        if (is_numeric(stripos(Curl::submit($this->upload(), $data, $file), '200 OK'))) {
             return ['file' => $this->path($name, $safe), 'url' => $this->url($name, $safe, $attname), 'key' => $name];
         } else {
             return [];
@@ -120,7 +120,7 @@ class TxcosStorage extends Storage
     public function del(string $name, bool $safe = false): bool
     {
         [$file] = explode('?', $name);
-        $result = HttpExtend::request('DELETE', "{$this->protocol}://{$this->bucket}.{$this->point}/{$file}", [
+        $result = Curl::request('DELETE', "{$this->protocol}://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, '204 No Content'));
@@ -135,7 +135,7 @@ class TxcosStorage extends Storage
     public function has(string $name, bool $safe = false): bool
     {
         $file = $this->delSuffix($name);
-        $result = HttpExtend::request('HEAD', "{$this->protocol}://{$this->bucket}.{$this->point}/{$file}", [
+        $result = Curl::request('HEAD', "{$this->protocol}://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $name),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));

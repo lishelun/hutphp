@@ -5,7 +5,7 @@ declare (strict_types=1);
 namespace hutphp\storage;
 
 use hutphp\Exception;
-use hutphp\extend\HttpExtend;
+use hutphp\extend\Curl;
 use hutphp\Storage;
 
 /**
@@ -81,7 +81,7 @@ class QiniuStorage extends Storage
         $token = $this->buildUploadToken($name , 3600 , $attname);
         $data = ['key' => $name , 'token' => $token , 'fileName' => $name];
         $file = ['field' => "file" , 'name' => $name , 'content' => $file];
-        $result = HttpExtend::submit($this->upload() , $data , $file , [] , 'POST' , false);
+        $result = Curl::submit($this->upload() , $data , $file , [] , 'POST' , false);
         return json_decode($result , true);
     }
 
@@ -108,7 +108,7 @@ class QiniuStorage extends Storage
     public function del(string $name , bool $safe = false): bool
     {
         [$EncodedEntryURI , $AccessToken] = $this->getAccessToken($name , 'delete');
-        $data = json_decode(HttpExtend::post("{$this->protocol}://rs.qiniu.com/delete/{$EncodedEntryURI}" , [] , [
+        $data = json_decode(Curl::post("{$this->protocol}://rs.qiniu.com/delete/{$EncodedEntryURI}" , [] , [
             'headers' => ["Authorization:QBox {$AccessToken}"] ,
         ]) , true);
         return empty($data['error']);
@@ -158,7 +158,7 @@ class QiniuStorage extends Storage
     public function info(string $name , bool $safe = false , ?string $attname = null): array
     {
         [$entry , $token] = $this->getAccessToken($name);
-        $data = json_decode(HttpExtend::get("{$this->protocol}://rs.qiniu.com/stat/{$entry}" , [] , ['headers' => ["Authorization: QBox {$token}"]]) , true);
+        $data = json_decode(Curl::get("{$this->protocol}://rs.qiniu.com/stat/{$entry}" , [] , ['headers' => ["Authorization: QBox {$token}"]]) , true);
         return isset($data['md5']) ? ['file' => $name , 'url' => $this->url($name , $safe , $attname) , 'key' => $name] : [];
     }
 
