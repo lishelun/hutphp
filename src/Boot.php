@@ -13,7 +13,7 @@ use think\Service;
 
 class Boot extends Service
 {
-    const VERSION = "6.0.30";
+    const VERSION = "6.0.0";
 
     public function boot()
     {
@@ -40,6 +40,7 @@ class Boot extends Service
         define('APP_PATH' , app_path());
         define('CONFIG_PATH' , config_path());
         define('PUBLIC_PATH' , public_path());
+        define('HUTCMS_PATH' , base_path() . 'hutcms' . DIRECTORY_SEPARATOR);
         define('RUNTIME_PATH' , runtime_path());
         define('ROOT_PATH' , root_path());
         define('CHARSET' , 'utf-8');
@@ -62,7 +63,10 @@ class Boot extends Service
 
                     $check = app()->http->getName() . '@' . $request->controller(true) . '/' . $request->action(true);
                     //排除验证
-                    if ( in_array(strtolower($check) , array_map(function ($val) {
+                    if($request->isOptions()){
+                        return response()->code(204)->header($header);
+                    }
+                    else if ( in_array(strtolower($check) , array_map(function ($val) {
                         return strtolower($val);
                     } , app()->config->get('app.deny_auth_list'))) ) {
                         return $next($request)->header($header);
