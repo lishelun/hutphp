@@ -1,11 +1,11 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\storage;
 
-use hutphp\Exception;
 use hutphp\Storage;
+use hutphp\Exception;
 
 /**
  * 本地存储支持
@@ -27,7 +27,7 @@ class LocalStorage extends Storage
             $domain = config('storage.local.domain') ?: $this->app->request->host();
             if ( $type === 'auto' ) {
                 $this->prefix = "//{$domain}";
-            } elseif ( in_array($type , ['http' , 'https']) ) {
+            } else if ( in_array($type , ['http' , 'https']) ) {
                 $this->prefix = "{$type}://{$domain}";
             }
         }
@@ -87,9 +87,9 @@ class LocalStorage extends Storage
     public function del(string $name , bool $safe = false): bool
     {
         if ( $this->has($name , $safe) ) {
-            try{
+            try {
                 return unlink($this->path($name , $safe));
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 return false;
             }
         } else {

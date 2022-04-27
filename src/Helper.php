@@ -3,9 +3,9 @@
 namespace hutphp;
 
 use think\App;
+use think\Request;
 use think\Container;
 use think\db\BaseQuery;
-use think\Request;
 
 abstract class Helper
 {
@@ -30,8 +30,8 @@ abstract class Helper
      */
     public function __construct(Controller $controller , App $app)
     {
-        $this->app = $app;
-        $this->class = $controller;
+        $this->app     = $app;
+        $this->class   = $controller;
         $this->request = $app->request;
     }
 
@@ -65,11 +65,10 @@ abstract class Helper
     }
 
 
-
     /**
      * 创建模型
-     * @param string $name    模型名称
-     * @param array  $data    初始数据
+     * @param string $name       模型名称
+     * @param array  $data       初始数据
      * @param string $connection 数据库链接
      * @return \think\Model 模型
      */
@@ -90,9 +89,9 @@ abstract class Helper
      * @param array|string $data 可以为设置的数组内容也可为get|post等request类的方法名
      * @return array
      */
-    public static function getRequestData(array|string $data = ''):array
+    public static function getRequestData(array|string $data = ''): array
     {
-        if (is_array($data)) {
+        if ( is_array($data) ) {
             return $data;
         } else {
             $input = $data ?: 'request';
@@ -107,12 +106,12 @@ abstract class Helper
     public function autoSortQuery($table): BaseQuery
     {
         $query = static::buildQuery($table);
-        if (app('request')->isPost() && app('request')->post('action') === 'sort') {
-            if (method_exists($query, 'getTableFields') && in_array('sort', $query->getTableFields())) {
-                if (app('request')->has($pk = $query->getPk() ?: 'id', 'post')) {
-                    $map = [$pk => app('request')->post($pk, 0)];
-                    $data = ['sort' => intval(app('request')->post('sort', 0))];
-                    if ($query->newQuery()->where($map)->update($data) !== 0) {
+        if ( app('request')->isPost() && app('request')->post('action') === 'sort' ) {
+            if ( method_exists($query , 'getTableFields') && in_array('sort' , $query->getTableFields()) ) {
+                if ( app('request')->has($pk = $query->getPk() ?: 'id' , 'post') ) {
+                    $map  = [$pk => app('request')->post($pk , 0)];
+                    $data = ['sort' => intval(app('request')->post('sort' , 0))];
+                    if ( $query->newQuery()->where($map)->update($data) !== 0 ) {
                         $this->class->success(lang('hutphp_sort_success'));
                     }
                 }

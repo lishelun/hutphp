@@ -1,5 +1,5 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\extend;
 class Pinyin
@@ -26,7 +26,7 @@ class Pinyin
     public function TransformWithTone($input_char , $delimiter = ' ' , $outside_ignore = false , $outside_up = false): string
     {
 
-        $input_len = mb_strlen($input_char , $this->charset);
+        $input_len   = mb_strlen($input_char , $this->charset);
         $output_char = '';
         for ( $i = 0 ; $i < $input_len ; $i++ ) {
             $word = mb_substr($input_char , $i , 1 , $this->charset);
@@ -53,8 +53,8 @@ class Pinyin
     public function TransformWithoutTone($input_char , $delimiter = '' , $outside_ignore = true , $outside_up = false)
     {
 
-        $exp = '&&||&&';
-        $char_with_tone = $this->TransformWithTone($input_char , $exp , $outside_ignore , $outside_up);
+        $exp               = '&&||&&';
+        $char_with_tone    = $this->TransformWithTone($input_char , $exp , $outside_ignore , $outside_up);
         $char_without_tone = $this->getChar_without_tone($char_with_tone);
         if ( $outside_up ) {
 
@@ -79,7 +79,7 @@ class Pinyin
     {
 
         $char_without_tone = ucwords($this->TransformWithoutTone($input_char , ' ' , true));
-        $ucwords = preg_replace('/[^A-Z]/' , '' , $char_without_tone);
+        $ucwords           = preg_replace('/[^A-Z]/' , '' , $char_without_tone);
         if ( !empty($delimiter) ) {
             $ucwords = implode($delimiter , str_split($ucwords));
         }
@@ -97,7 +97,7 @@ class Pinyin
     public function TransformUcwords($input_char , $delimiter = ' ' , $outside_ignore = false): string
     {
 
-        $input_len = mb_strlen($input_char , $this->charset);
+        $input_len   = mb_strlen($input_char , $this->charset);
         $output_char = '';
         for ( $i = 0 ; $i < $input_len ; $i++ ) {
             $word = mb_substr($input_char , $i , 1 , $this->charset);
@@ -111,7 +111,7 @@ class Pinyin
 
         $array = explode($delimiter , $output_char);
         $array = array_filter($array);
-        $res = '';
+        $res   = '';
         foreach ( $array as $list ) {
             $res .= substr($list , 0 , 1);
         }
@@ -124,8 +124,8 @@ class Pinyin
      */
     public function getChar_without_tone(string $char_with_tone)
     {
-        return str_replace(array('ā' , 'á' , 'ǎ' , 'à' , 'ō' , 'ó' , 'ǒ' , 'ò' , 'ē' , 'é' , 'ě' , 'è' , 'ī' , 'í' , 'ǐ' , 'ì' , 'ū' , 'ú' , 'ǔ' , 'ù' , 'ǖ' , 'ǘ' , 'ǚ' , 'ǜ' , 'ü') ,
-            array('a' , 'a' , 'a' , 'a' , 'o' , 'o' , 'o' , 'o' , 'e' , 'e' , 'e' , 'e' , 'i' , 'i' , 'i' , 'i' , 'u' , 'u' , 'u' , 'u' , 'v' , 'v' , 'v' , 'v' , 'v')
-            , $char_with_tone);
+        return str_replace(['ā' , 'á' , 'ǎ' , 'à' , 'ō' , 'ó' , 'ǒ' , 'ò' , 'ē' , 'é' , 'ě' , 'è' , 'ī' , 'í' , 'ǐ' , 'ì' , 'ū' , 'ú' , 'ǔ' , 'ù' , 'ǖ' , 'ǘ' , 'ǚ' , 'ǜ' , 'ü'] ,
+                           ['a' , 'a' , 'a' , 'a' , 'o' , 'o' , 'o' , 'o' , 'e' , 'e' , 'e' , 'e' , 'i' , 'i' , 'i' , 'i' , 'u' , 'u' , 'u' , 'u' , 'v' , 'v' , 'v' , 'v' , 'v']
+            ,              $char_with_tone);
     }
 }

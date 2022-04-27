@@ -8,15 +8,15 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace think\middleware;
 
 use Closure;
 use think\App;
 use think\Request;
-use think\Response;
 use think\Session;
+use think\Response;
 
 /**
  * Session初始化
@@ -32,7 +32,7 @@ class SessionInit
 
     public function __construct(App $app , Session $session)
     {
-        $this->app = $app;
+        $this->app     = $app;
         $this->session = $session;
     }
 
@@ -47,8 +47,8 @@ class SessionInit
     {
         // Session初始化
         $varSessionId = $this->app->config->get('session.var_session_id');
-        $cookieName = $this->session->getName();
-        $had = false;
+        $cookieName   = $this->session->getName();
+        $had          = false;
         if ( $varSessionId && $request->request($varSessionId) ) {
             $sessionId = $request->request($varSessionId);
         } else {

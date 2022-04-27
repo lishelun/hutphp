@@ -1,10 +1,10 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\helper;
 
-use hutphp\Helper;
 use think\Model;
+use hutphp\Helper;
 use think\db\BaseQuery;
 
 /**
@@ -41,8 +41,7 @@ class FormHelper extends Helper
             } else {
                 return $edata;
             }
-        }
-        else if ( $this->app->request->isPost() ) {
+        } else if ( $this->app->request->isPost() ) {
             $edata = array_merge($this->app->request->post() , $edata);
             if ( false !== $this->class->callback('_form_filter' , $edata , $where) ) {
                 $result = data_save($query , $edata , $field , $where);

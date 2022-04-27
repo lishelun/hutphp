@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\service;
 
@@ -36,9 +36,9 @@ class TokenService extends Service
      */
     protected function initialize()
     {
-        $this->name = $this->getCacheName();
+        $this->name  = $this->getCacheName();
         $this->items = $this->getCacheList(true);
-        $this->app->event->listen('HttpEnd', function () {
+        $this->app->event->listen('HttpEnd' , function () {
             TokenService::instance()->saveCacheData();
         });
     }
@@ -59,7 +59,7 @@ class TokenService extends Service
     public function saveCacheData()
     {
         $this->clearTimeoutCache();
-        $this->app->cache->set($this->name, $this->items, $this->expire);
+        $this->app->cache->set($this->name , $this->items , $this->expire);
     }
 
     /**
@@ -68,19 +68,19 @@ class TokenService extends Service
      */
     public function getInputToken(): string
     {
-        return $this->app->request->header('form-token') ?: input('_csrf_', '');
+        return $this->app->request->header('form-token') ?: input('_csrf_' , '');
     }
 
     /**
      * 验证 CSRF 是否有效
      * @param null|string $token 表单令牌
-     * @param null|string $node 授权节点
+     * @param null|string $node  授权节点
      * @return boolean
      */
-    public function checkFormToken(?string $token = null, ?string $node = null): bool
+    public function checkFormToken(?string $token = null , ?string $node = null): bool
     {
         $cache = $this->getCacheItem($token ?: $this->getInputToken());
-        if (empty($cache['node']) || empty($cache['time'])) return false;
+        if ( empty($cache['node']) || empty($cache['time']) ) return false;
         return $cache['node'] === NodeService::instance()->fullnode($node);
     }
 
@@ -103,9 +103,9 @@ class TokenService extends Service
     public function buildFormToken(?string $node = null): array
     {
         $cnode = NodeService::instance()->fullnode($node);
-        [$token, $time] = [md5(uniqid(strval(mt_rand(100000, 999999)))), time()];
-        $this->setCacheItem($token, $item = ['node' => $cnode, 'time' => $time]);
-        return array_merge($item, ['token' => $token]);
+        [$token , $time] = [md5(uniqid(strval(mt_rand(100000 , 999999)))) , time()];
+        $this->setCacheItem($token , $item = ['node' => $cnode , 'time' => $time]);
+        return array_merge($item , ['token' => $token]);
     }
 
     /**
@@ -119,9 +119,9 @@ class TokenService extends Service
     /**
      * 设置缓存数据
      * @param string $token
-     * @param array $value
+     * @param array  $value
      */
-    private function setCacheItem(string $token, array $value)
+    private function setCacheItem(string $token , array $value)
     {
         $this->items[$token] = $value;
     }
@@ -153,8 +153,8 @@ class TokenService extends Service
      */
     private function getCacheList(bool $clear = false): array
     {
-        $this->items = $this->app->cache->get($this->name, []);
-        if ($clear) $this->items = $this->clearTimeoutCache();
+        $this->items = $this->app->cache->get($this->name , []);
+        if ( $clear ) $this->items = $this->clearTimeoutCache();
         return $this->items;
     }
 
@@ -165,13 +165,13 @@ class TokenService extends Service
     private function clearTimeoutCache(): array
     {
         $time = time();
-        foreach ($this->items as $key => $item) {
-            if (empty($item['time']) || $item['time'] + $this->expire < $time) {
+        foreach ( $this->items as $key => $item ) {
+            if ( empty($item['time']) || $item['time'] + $this->expire < $time ) {
                 unset($this->items[$key]);
             }
         }
-        if (count($this->items) > 999) {
-            $this->items = array_slice($this->items, -999);
+        if ( count($this->items) > 999 ) {
+            $this->items = array_slice($this->items , -999);
         }
         return $this->items;
     }

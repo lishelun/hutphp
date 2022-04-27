@@ -35,19 +35,19 @@ class CheckRequestCache
      */
     protected $config = [
         // 请求缓存规则 true为自动规则
-        'request_cache_key'    => true,
+        'request_cache_key'    => true ,
         // 请求缓存有效期
-        'request_cache_expire' => null,
+        'request_cache_expire' => null ,
         // 全局请求缓存排除规则
-        'request_cache_except' => [],
+        'request_cache_except' => [] ,
         // 请求缓存的Tag
-        'request_cache_tag'    => '',
+        'request_cache_tag'    => '' ,
     ];
 
-    public function __construct(Cache $cache, Config $config)
+    public function __construct(Cache $cache , Config $config)
     {
         $this->cache  = $cache;
-        $this->config = array_merge($this->config, $config->get('route'));
+        $this->config = array_merge($this->config , $config->get('route'));
     }
 
     /**
@@ -58,33 +58,33 @@ class CheckRequestCache
      * @param mixed   $cache
      * @return Response
      */
-    public function handle($request, Closure $next, $cache = null)
+    public function handle($request , Closure $next , $cache = null)
     {
-        if ($request->isGet() && false !== $cache) {
-            if (false === $this->config['request_cache_key']) {
+        if ( $request->isGet() && false !== $cache ) {
+            if ( false === $this->config['request_cache_key'] ) {
                 // 关闭当前缓存
                 $cache = false;
             }
 
             $cache = $cache ?? $this->getRequestCache($request);
 
-            if ($cache) {
-                if (is_array($cache)) {
-                    [$key, $expire, $tag] = array_pad($cache, 3, null);
+            if ( $cache ) {
+                if ( is_array($cache) ) {
+                    [$key , $expire , $tag] = array_pad($cache , 3 , null);
                 } else {
                     $key    = md5($request->url(true));
                     $expire = $cache;
                     $tag    = null;
                 }
 
-                $key = $this->parseCacheKey($request, $key);
+                $key = $this->parseCacheKey($request , $key);
 
-                if (strtotime($request->server('HTTP_IF_MODIFIED_SINCE', '')) + $expire > $request->server('REQUEST_TIME')) {
+                if ( strtotime($request->server('HTTP_IF_MODIFIED_SINCE' , '')) + $expire > $request->server('REQUEST_TIME') ) {
                     // 读取缓存
                     return Response::create()->code(304);
-                } elseif (($hit = $this->cache->get($key)) !== null) {
-                    [$content, $header, $when] = $hit;
-                    if (null === $expire || $when + $expire > $request->server('REQUEST_TIME')) {
+                } else if ( ($hit = $this->cache->get($key)) !== null ) {
+                    [$content , $header , $when] = $hit;
+                    if ( null === $expire || $when + $expire > $request->server('REQUEST_TIME') ) {
                         return Response::create($content)->header($header);
                     }
                 }
@@ -93,13 +93,13 @@ class CheckRequestCache
 
         $response = $next($request);
 
-        if (isset($key) && 200 == $response->getCode() && $response->isAllowCache()) {
+        if ( isset($key) && 200 == $response->getCode() && $response->isAllowCache() ) {
             $header                  = $response->getHeader();
             $header['Cache-Control'] = 'max-age=' . $expire . ',must-revalidate';
             $header['Last-Modified'] = gmdate('D, d M Y H:i:s') . ' GMT';
-            $header['Expires']       = gmdate('D, d M Y H:i:s', time() + $expire) . ' GMT';
+            $header['Expires']       = gmdate('D, d M Y H:i:s' , time() + $expire) . ' GMT';
 
-            $this->cache->tag($tag)->set($key, [$response->getContent(), $header, time()], $expire);
+            $this->cache->tag($tag)->set($key , [$response->getContent() , $header , time()] , $expire);
         }
 
         return $response;
@@ -118,13 +118,13 @@ class CheckRequestCache
         $except = $this->config['request_cache_except'];
         $tag    = $this->config['request_cache_tag'];
 
-        foreach ($except as $rule) {
-            if (0 === stripos($request->url(), $rule)) {
+        foreach ( $except as $rule ) {
+            if ( 0 === stripos($request->url() , $rule) ) {
                 return;
             }
         }
 
-        return [$key, $expire, $tag];
+        return [$key , $expire , $tag];
     }
 
     /**
@@ -134,39 +134,39 @@ class CheckRequestCache
      * @param mixed   $key
      * @return null|string
      */
-    protected function parseCacheKey($request, $key)
+    protected function parseCacheKey($request , $key)
     {
-        if ($key instanceof \Closure) {
-            $key = call_user_func($key, $request);
+        if ( $key instanceof \Closure ) {
+            $key = call_user_func($key , $request);
         }
 
-        if (false === $key) {
+        if ( false === $key ) {
             // 关闭当前缓存
             return;
         }
 
-        if (true === $key) {
+        if ( true === $key ) {
             // 自动缓存功能
             $key = '__URL__';
-        } elseif (strpos($key, '|')) {
-            [$key, $fun] = explode('|', $key);
+        } else if ( strpos($key , '|') ) {
+            [$key , $fun] = explode('|' , $key);
         }
 
         // 特殊规则替换
-        if (false !== strpos($key, '__')) {
-            $key = str_replace(['__CONTROLLER__', '__ACTION__', '__URL__'], [$request->controller(), $request->action(), md5($request->url(true))], $key);
+        if ( false !== strpos($key , '__') ) {
+            $key = str_replace(['__CONTROLLER__' , '__ACTION__' , '__URL__'] , [$request->controller() , $request->action() , md5($request->url(true))] , $key);
         }
 
-        if (false !== strpos($key, ':')) {
+        if ( false !== strpos($key , ':') ) {
             $param = $request->param();
 
-            foreach ($param as $item => $val) {
-                if (is_string($val) && false !== strpos($key, ':' . $item)) {
-                    $key = str_replace(':' . $item, (string) $val, $key);
+            foreach ( $param as $item => $val ) {
+                if ( is_string($val) && false !== strpos($key , ':' . $item) ) {
+                    $key = str_replace(':' . $item , (string)$val , $key);
                 }
             }
-        } elseif (strpos($key, ']')) {
-            if ('[' . $request->ext() . ']' == $key) {
+        } else if ( strpos($key , ']') ) {
+            if ( '[' . $request->ext() . ']' == $key ) {
                 // 缓存某个后缀的请求
                 $key = md5($request->url());
             } else {
@@ -174,7 +174,7 @@ class CheckRequestCache
             }
         }
 
-        if (isset($fun)) {
+        if ( isset($fun) ) {
             $key = $fun($key);
         }
 

@@ -1,11 +1,11 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\service;
 
-use hutphp\extend\Data;
 use hutphp\Service;
+use hutphp\extend\Data;
 
 /**
  * 系统权限管理服务
@@ -30,7 +30,7 @@ class AdminService extends Service
      */
     public function isSuper(): bool
     {
-        return in_array($this->getUserName(),$this->getSuperName());
+        return in_array($this->getUserName() , $this->getSuperName());
     }
 
     /**
@@ -39,7 +39,7 @@ class AdminService extends Service
      */
     public function getSuperName(): array
     {
-        return $this->app->config->get('app.super_username', 'admin');
+        return $this->app->config->get('app.super_username' , 'admin');
     }
 
     /**
@@ -48,7 +48,7 @@ class AdminService extends Service
      */
     public function getUserId(): int
     {
-        return intval($this->app->session->get('user.id', 0));
+        return intval($this->app->session->get('user.id' , 0));
     }
 
     /**
@@ -57,7 +57,7 @@ class AdminService extends Service
      */
     public function getUserName(): string
     {
-        return $this->app->session->get('user.username', '');
+        return $this->app->session->get('user.username' , '');
     }
 
     /**
@@ -72,22 +72,22 @@ class AdminService extends Service
         $service = NodeService::instance();
         $methods = $service->getMethods();
         // 兼容 windows 控制器不区分大小写的验证问题
-        foreach ($methods as $key => $rule) {
-            if (preg_match('#.*?/.*?_.*?#', $key)) {
-                $attr = explode('/', $key);
-                $attr[1] = strtr($attr[1], ['_' => '']);
-                $methods[join('/', $attr)] = $rule;
+        foreach ( $methods as $key => $rule ) {
+            if ( preg_match('#.*?/.*?_.*?#' , $key) ) {
+                $attr                       = explode('/' , $key);
+                $attr[1]                    = strtr($attr[1] , ['_' => '']);
+                $methods[join('/' , $attr)] = $rule;
             }
         }
         $current = $service->fullnode($node);
-        if (function_exists('admin_check_filter')) {
-            return admin_check_filter($current, $methods, $this->app->session->get('user.nodes', []), $this);
-        } elseif ($this->isSuper()) {
+        if ( function_exists('admin_check_filter') ) {
+            return admin_check_filter($current , $methods , $this->app->session->get('user.nodes' , []) , $this);
+        } else if ( $this->isSuper() ) {
             return true;
-        } elseif (empty($methods[$current]['isAuth'])) {
-            return !(!empty($methods[$current]['isLogin']) && !$this->isLogin());
+        } else if ( empty($methods[$current]['isAuth']) ) {
+            return !( !empty($methods[$current]['isLogin']) && !$this->isLogin());
         } else {
-            return in_array($current, $this->app->session->get('user.nodes', []));
+            return in_array($current , $this->app->session->get('user.nodes' , []));
         }
     }
 
@@ -100,22 +100,22 @@ class AdminService extends Service
      */
     public function getNodesTree(array $checks = []): array
     {
-        [$nodes, $pnodes, $methods] = [[], [], array_reverse(NodeService::instance()->getMethods())];
-        foreach ($methods as $node => $method) {
-            [$count, $pnode] = [substr_count($node, '/'), substr($node, 0, strripos($node, '/'))];
-            if ($count === 2 && !empty($method['isAuth'])) {
-                in_array($pnode, $pnodes) or array_push($pnodes, $pnode);
-                $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checks)];
-            } elseif ($count === 1 && in_array($pnode, $pnodes)) {
-                $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checks)];
+        [$nodes , $pnodes , $methods] = [[] , [] , array_reverse(NodeService::instance()->getMethods())];
+        foreach ( $methods as $node => $method ) {
+            [$count , $pnode] = [substr_count($node , '/') , substr($node , 0 , strripos($node , '/'))];
+            if ( $count === 2 && !empty($method['isAuth']) ) {
+                in_array($pnode , $pnodes) or array_push($pnodes , $pnode);
+                $nodes[$node] = ['node' => $node , 'title' => $method['title'] , 'pnode' => $pnode , 'checked' => in_array($node , $checks)];
+            } else if ( $count === 1 && in_array($pnode , $pnodes) ) {
+                $nodes[$node] = ['node' => $node , 'title' => $method['title'] , 'pnode' => $pnode , 'checked' => in_array($node , $checks)];
             }
         }
-        foreach (array_keys($nodes) as $key) foreach ($methods as $node => $method) if (stripos($key, $node . '/') !== false) {
-            $pnode = substr($node, 0, strripos($node, '/'));
-            $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checks)];
-            $nodes[$pnode] = ['node' => $pnode, 'title' => ucfirst($pnode), 'pnode' => '', 'checked' => in_array($pnode, $checks)];
+        foreach ( array_keys($nodes) as $key ) foreach ( $methods as $node => $method ) if ( stripos($key , $node . '/') !== false ) {
+            $pnode         = substr($node , 0 , strripos($node , '/'));
+            $nodes[$node]  = ['node' => $node , 'title' => $method['title'] , 'pnode' => $pnode , 'checked' => in_array($node , $checks)];
+            $nodes[$pnode] = ['node' => $pnode , 'title' => ucfirst($pnode) , 'pnode' => '' , 'checked' => in_array($pnode , $checks)];
         }
-        return Data::arr2tree(array_reverse($nodes), 'node', 'pnode', '_sub_');
+        return Data::arr2tree(array_reverse($nodes) , 'node' , 'pnode' , '_sub_');
     }
 
     /**
@@ -137,11 +137,11 @@ class AdminService extends Service
      */
     public function setSession($r)
     {
-        session('user.id',$r['id']);
-        session('user.username',$r['username']);
-        session('user.nodes',$r['nodes']);
-        session('user.token',$r['token']);
-        session('user.group_id',$r['group_id']);
+        session('user.id' , $r['id']);
+        session('user.username' , $r['username']);
+        session('user.nodes' , $r['nodes']);
+        session('user.token' , $r['token']);
+        session('user.group_id' , $r['group_id']);
     }
 
     /**
@@ -150,11 +150,11 @@ class AdminService extends Service
      */
     public function clearSession()
     {
-        session('user.id',null);
-        session('user.username',null);
-        session('user.nodes',null);
-        session('user.token',null);
-        session('user.group_id',null);
+        session('user.id' , null);
+        session('user.username' , null);
+        session('user.nodes' , null);
+        session('user.token' , null);
+        session('user.group_id' , null);
     }
 
 }

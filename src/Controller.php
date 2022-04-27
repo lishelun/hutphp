@@ -1,25 +1,25 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp;
 
-use hutphp\helper\DeleteHelper;
-use hutphp\helper\FormHelper;
-use hutphp\helper\QueryHelper;
-use hutphp\helper\SaveHelper;
-use hutphp\helper\TokenHelper;
-use hutphp\helper\ValidateHelper;
 use think\App;
-use think\db\BaseQuery;
 use think\Model;
 use think\Request;
+use think\db\BaseQuery;
+use hutphp\helper\FormHelper;
+use hutphp\helper\SaveHelper;
+use hutphp\helper\QueryHelper;
+use hutphp\helper\TokenHelper;
+use hutphp\helper\DeleteHelper;
+use hutphp\helper\ValidateHelper;
 
 class Controller extends \stdClass
 {
-    public bool $csrf = false;
-    public string $csrf_message = 'csrf error!';
-    protected App $app;
+    public bool       $csrf         = false;
+    public string     $csrf_message = 'csrf error!';
+    protected App     $app;
     protected Request $request;
     /**
      * 中间件
@@ -39,7 +39,7 @@ class Controller extends \stdClass
 
     public function __construct(App $app)
     {
-        $this->app = $app;
+        $this->app     = $app;
         $this->request = $app->request;
         $this->app->bind('hutphp\Controller' , $this);
         if ( in_array($this->request->action() , get_class_methods(__CLASS__)) ) {
@@ -61,7 +61,7 @@ class Controller extends \stdClass
     public function success(string $msg = '操作成功' , array $data = [] , int $code = 0)
     {
         $msg = $msg == '操作成功' ? lang('hutphp_success') : $msg;
-        if($this->csrf){
+        if ( $this->csrf ) {
             TokenHelper::instance()->clear();
         }
         abort(
@@ -121,7 +121,7 @@ class Controller extends \stdClass
     {
         if ( is_string($name) ) {
             $this->$name = $value;
-        } elseif ( is_array($name) ) {
+        } else if ( is_array($name) ) {
             foreach ( $name as $k => $v ) {
                 if ( is_string($k) ) {
                     $this->$k = $v;
@@ -184,6 +184,7 @@ class Controller extends \stdClass
     {
         return QueryHelper::instance()->init($this->_getTableName($name) , $input);
     }
+
     /**
      * 模型助手
      * @param string|Model|BaseQuery $name

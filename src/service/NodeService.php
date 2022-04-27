@@ -1,12 +1,12 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\service;
 
-use ReflectionClass;
-use ReflectionException;
-use ReflectionMethod;
 use hutphp\Service;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionException;
 
 /**
  * 应用节点服务管理
@@ -23,10 +23,10 @@ class NodeService extends Service
     public static function nameTolower(string $name): string
     {
         $dots = [];
-        foreach (explode('.', strtr($name, '/', '.')) as $dot) {
-            $dots[] = trim(preg_replace("/[A-Z]/", "_\\0", $dot), '_');
+        foreach ( explode('.' , strtr($name , '/' , '.')) as $dot ) {
+            $dots[] = trim(preg_replace("/[A-Z]/" , "_\\0" , $dot) , '_');
         }
-        return strtolower(join('.', $dots));
+        return strtolower(join('.' , $dots));
     }
 
     /**
@@ -38,10 +38,10 @@ class NodeService extends Service
     {
         $prefix = strtolower($this->app->http->getName());
         // 获取应用前缀节点
-        if (in_array($type, ['app', 'module'])) return $prefix;
+        if ( in_array($type , ['app' , 'module']) ) return $prefix;
         // 获取控制器前缀节点
         $middle = $this->nameTolower($this->app->request->controller());
-        if ($type === 'controller') return $prefix . '/' . $middle;
+        if ( $type === 'controller' ) return $prefix . '/' . $middle;
         // 获取完整的权限节点
         return $prefix . '/' . $middle . '/' . strtolower($this->app->request->action());
     }
@@ -53,10 +53,10 @@ class NodeService extends Service
      */
     public function fullnode(?string $node = ''): string
     {
-        if (empty($node)) {
+        if ( empty($node) ) {
             return $this->getCurrent();
         }
-        switch (count($attrs = explode('/', $node))) {
+        switch ( count($attrs = explode('/' , $node)) ) {
             case 2:
                 $suffix = $this->nameTolower($attrs[0]) . '/' . $attrs[1];
                 return $this->getCurrent('module') . '/' . strtolower($suffix);
@@ -64,7 +64,7 @@ class NodeService extends Service
                 return $this->getCurrent('controller') . '/' . strtolower($node);
             default:
                 $attrs[1] = $this->nameTolower($attrs[1]);
-                return strtolower(join('/', $attrs));
+                return strtolower(join('/' , $attrs));
         }
     }
 
@@ -76,8 +76,8 @@ class NodeService extends Service
     public function getModules(array $data = []): array
     {
         $path = $this->app->getBasePath();
-        foreach (scandir($path) as $item) if ($item[0] !== '.') {
-            if (is_dir(realpath($path . $item))) $data[] = $item;
+        foreach ( scandir($path) as $item ) if ( $item[0] !== '.' ) {
+            if ( is_dir(realpath($path . $item)) ) $data[] = $item;
         }
         return $data;
     }
@@ -91,33 +91,33 @@ class NodeService extends Service
     public function getMethods(bool $force = false): array
     {
         static $data = [];
-        if ($force===false) {
-            if (count($data) > 0) return $data;
-            $data = $this->app->cache->get('SystemAuthNode', []);
-            if (count($data) > 0) return $data;
+        if ( $force === false ) {
+            if ( count($data) > 0 ) return $data;
+            $data = $this->app->cache->get('SystemAuthNode' , []);
+            if ( count($data) > 0 ) return $data;
         } else {
             $data = [];
         }
         /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\hutphp\Controller');
         /*! 扫描所有代码控制器节点，更新节点缓存 */
-        foreach ($this->scanDirectory($this->app->getBasePath()) as $file) {
-            $name = substr($file, strlen(strtr($this->app->getRootPath(), '\\', '/')) - 1);
-            if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
-                [, $namespace, $appname, $classname] = $matches;
-                $class = new ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\'));
-                $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
-                $data[$prefix] = $this->parseComment($class->getDocComment() ?: '', $classname);
-                foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    if (in_array($metname = $method->getName(), $ignores)) continue;
-                    $data[strtolower("{$prefix}/{$metname}")] = $this->parseComment($method->getDocComment() ?: '', $metname);
+        foreach ( $this->scanDirectory($this->app->getBasePath()) as $file ) {
+            $name = substr($file , strlen(strtr($this->app->getRootPath() , '\\' , '/')) - 1);
+            if ( preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i" , $name , $matches) ) {
+                [, $namespace , $appname , $classname] = $matches;
+                $class         = new ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}" , '/' , '\\'));
+                $prefix        = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}" , '\\' , '/'));
+                $data[$prefix] = $this->parseComment($class->getDocComment() ?: '' , $classname);
+                foreach ( $class->getMethods(ReflectionMethod::IS_PUBLIC) as $method ) {
+                    if ( in_array($metname = $method->getName() , $ignores) ) continue;
+                    $data[strtolower("{$prefix}/{$metname}")] = $this->parseComment($method->getDocComment() ?: '' , $metname);
                 }
             }
         }
-        if (function_exists('admin_node_filter')) {
+        if ( function_exists('admin_node_filter') ) {
             admin_node_filter($data);
         }
-        $this->app->cache->set('SystemAuthNode', $data);
+        $this->app->cache->set('SystemAuthNode' , $data);
         return $data;
     }
 
@@ -127,43 +127,45 @@ class NodeService extends Service
      * @param string $default 默认标题
      * @return array
      */
-    private function parseComment(string $comment, string $default = ''): array
+    private function parseComment(string $comment , string $default = ''): array
     {
-        $text = strtr($comment, "\n", ' ');
-        $title = preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $text);
-        if (in_array(substr($title, 0, 5), ['@auth', '@menu', '@logi','@memb','@acco'])) $title = $default;
+        $text  = strtr($comment , "\n" , ' ');
+        $title = preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/' , '$1' , $text);
+        if ( in_array(substr($title , 0 , 5) , ['@auth' , '@menu' , '@logi' , '@memb' , '@acco']) ) $title = $default;
         return [
-            'title'   => $title ?: $default,
-            'isAuth'  => intval(preg_match('/@auth\s*true/i', $text)),
-            'isMenu'  => intval(preg_match('/@menu\s*true/i', $text)),
-            'isLogin' => intval(preg_match('/@login\s*true/i', $text)),
-            'isMember' => intval(preg_match('/@member\s*true/i', $text)),
-            'isAccount' => intval(preg_match('/@account\s*true/i', $text)),
+            'title'     => $title ?: $default ,
+            'isAuth'    => intval(preg_match('/@auth\s*true/i' , $text)) ,
+            'isMenu'    => intval(preg_match('/@menu\s*true/i' , $text)) ,
+            'isLogin'   => intval(preg_match('/@login\s*true/i' , $text)) ,
+            'isMember'  => intval(preg_match('/@member\s*true/i' , $text)) ,
+            'isAccount' => intval(preg_match('/@account\s*true/i' , $text)) ,
         ];
     }
 
     /**
      * 获取所有PHP文件列表
-     * @param string $path 扫描目录
-     * @param array $data 额外数据
-     * @param null|string $ext 文件后缀
+     * @param string      $path 扫描目录
+     * @param array       $data 额外数据
+     * @param null|string $ext  文件后缀
      * @return array
      */
-    public function scanDirectory(string $path, array $data = [], ?string $ext = 'php'): array
+    public function scanDirectory(string $path , array $data = [] , ?string $ext = 'php'): array
     {
-        if (file_exists($path)) if (is_file($path)) {
-            $data[] = strtr($path, '\\', '/');
-        } elseif (is_dir($path)) foreach (scandir($path) as $item) if ($item[0] !== '.') {
-            $real = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $item;
-            if (is_readable($real)) if (is_dir($real)) {
-                $data = $this->scanDirectory($real, $data, $ext);
-            } elseif (is_file($real) && (is_null($ext) || pathinfo($real, 4) === $ext)) {
-                $data[] = strtr($real, '\\', '/');
+        if ( file_exists($path) ) if ( is_file($path) ) {
+            $data[] = strtr($path , '\\' , '/');
+        } else if ( is_dir($path) ) foreach ( scandir($path) as $item ) if ( $item[0] !== '.' ) {
+            $real = rtrim($path , '\\/') . DIRECTORY_SEPARATOR . $item;
+            if ( is_readable($real) ) if ( is_dir($real) ) {
+                $data = $this->scanDirectory($real , $data , $ext);
+            } else if ( is_file($real) && (is_null($ext) || pathinfo($real , 4) === $ext) ) {
+                $data[] = strtr($real , '\\' , '/');
             }
         }
         return $data;
     }
-    public function clearCache(){
+
+    public function clearCache()
+    {
         app()->cache->delete('SystemAuthNode');
     }
 }

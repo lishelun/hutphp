@@ -1,19 +1,19 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\controller;
 
 use Exception;
-use hutphp\Controller;
 use hutphp\Storage;
-use hutphp\storage\AliossStorage;
+use think\Response;
+use hutphp\Controller;
+use think\file\UploadedFile;
 use hutphp\storage\LocalStorage;
 use hutphp\storage\QiniuStorage;
 use hutphp\storage\TxcosStorage;
+use hutphp\storage\AliossStorage;
 use think\exception\HttpResponseException;
-use think\file\UploadedFile;
-use think\Response;
 
 class Upload extends Controller
 {
@@ -28,8 +28,8 @@ class Upload extends Controller
         foreach ( str2arr(config('storage.allow_exts')) as $ext ) {
             $data['exts'][$ext] = Storage::mime($ext);
         }
-        $template = realpath(__DIR__ . '/../view/upload.js');
-        $data['exts'] = json_encode($data['exts'] , JSON_UNESCAPED_UNICODE);
+        $template         = realpath(__DIR__ . '/../view/upload.js');
+        $data['exts']     = json_encode($data['exts'] , JSON_UNESCAPED_UNICODE);
         $data['nameType'] = config('storage.name_type') ?: 'xmd5';
         return view($template , $data)->contentType('application/x-javascript');
     }
@@ -47,29 +47,29 @@ class Upload extends Controller
             $data['url'] = $info['url'];
             $data['key'] = $info['key'];
             $this->success('文件已经上传' , $data , 200);
-        } elseif ( 'local' === $data['uptype'] ) {
-            $data['url'] = LocalStorage::instance()->url($data['key'] , $safe , $name);
+        } else if ( 'local' === $data['uptype'] ) {
+            $data['url']    = LocalStorage::instance()->url($data['key'] , $safe , $name);
             $data['server'] = LocalStorage::instance()->upload();
-        } elseif ( 'qiniu' === $data['uptype'] ) {
-            $data['url'] = QiniuStorage::instance()->url($data['key'] , $safe , $name);
-            $data['token'] = QiniuStorage::instance()->buildUploadToken($data['key'] , 3600 , $name);
+        } else if ( 'qiniu' === $data['uptype'] ) {
+            $data['url']    = QiniuStorage::instance()->url($data['key'] , $safe , $name);
+            $data['token']  = QiniuStorage::instance()->buildUploadToken($data['key'] , 3600 , $name);
             $data['server'] = QiniuStorage::instance()->upload();
-        } elseif ( 'alioss' === $data['uptype'] ) {
-            $token = AliossStorage::instance()->buildUploadToken($data['key'] , 3600 , $name);
-            $data['url'] = $token['siteurl'];
-            $data['policy'] = $token['policy'];
-            $data['signature'] = $token['signature'];
+        } else if ( 'alioss' === $data['uptype'] ) {
+            $token                  = AliossStorage::instance()->buildUploadToken($data['key'] , 3600 , $name);
+            $data['url']            = $token['siteurl'];
+            $data['policy']         = $token['policy'];
+            $data['signature']      = $token['signature'];
             $data['OSSAccessKeyId'] = $token['keyid'];
-            $data['server'] = AliossStorage::instance()->upload();
-        } elseif ( 'txcos' === $data['uptype'] ) {
-            $token = TxcosStorage::instance()->buildUploadToken($data['key'] , 3600 , $name);
-            $data['url'] = $token['siteurl'];
-            $data['q-ak'] = $token['q-ak'];
-            $data['policy'] = $token['policy'];
-            $data['q-key-time'] = $token['q-key-time'];
-            $data['q-signature'] = $token['q-signature'];
+            $data['server']         = AliossStorage::instance()->upload();
+        } else if ( 'txcos' === $data['uptype'] ) {
+            $token                    = TxcosStorage::instance()->buildUploadToken($data['key'] , 3600 , $name);
+            $data['url']              = $token['siteurl'];
+            $data['q-ak']             = $token['q-ak'];
+            $data['policy']           = $token['policy'];
+            $data['q-key-time']       = $token['q-key-time'];
+            $data['q-signature']      = $token['q-signature'];
             $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
-            $data['server'] = TxcosStorage::instance()->upload();
+            $data['server']           = TxcosStorage::instance()->upload();
         }
         $this->success('获取上传授权参数' , $data , 404);
     }
@@ -83,9 +83,9 @@ class Upload extends Controller
         if ( !($file = $this->getFile())->isValid() ) {
             $this->error('文件上传异常，文件过大或未上传！');
         }
-        $safeMode = $this->getSafe();
+        $safeMode  = $this->getSafe();
         $extension = strtolower($file->getOriginalExtension());
-        $saveName = input('key') ?: Storage::name($file->getPathname() , $extension , '' , 'md5_file');
+        $saveName  = input('key') ?: Storage::name($file->getPathname() , $extension , '' , 'md5_file');
         // 检查文件名称是否合法
         if ( strpos($saveName , '../') !== false ) {
             $this->error('文件路径不能出现跳级操作！');
@@ -120,13 +120,13 @@ class Upload extends Controller
         }
         try {
             if ( $this->getType() === 'local' ) {
-                $local = LocalStorage::instance();
+                $local    = LocalStorage::instance();
                 $distName = $local->path($saveName , $safeMode);
                 $file->move(dirname($distName) , basename($distName));
                 $info = $local->info($saveName , $safeMode , $file->getOriginalName());
             } else {
                 $file_content = file_get_contents($file->getPathname());
-                $info = Storage::instance($this->getType())->set($saveName , $file_content , $safeMode , $file->getOriginalName());
+                $info         = Storage::instance($this->getType())->set($saveName , $file_content , $safeMode , $file->getOriginalName());
             }
             if ( isset($info['url']) ) {
                 $this->success('文件上传成功！' , ['url' => $safeMode ? $saveName : $info['url']]);

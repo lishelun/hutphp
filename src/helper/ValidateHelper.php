@@ -1,5 +1,5 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\helper;
 
@@ -21,34 +21,34 @@ class ValidateHelper extends Helper
      * @return array 数据
      *                                更多规则参照 ThinkPHP 官方的验证类
      */
-    public function init(array $rules, array|string $input = '', ?callable $callable = null): array
+    public function init(array $rules , array|string $input = '' , ?callable $callable = null): array
     {
-        if (is_string($input)) {
-            $type = trim($input, '.') ?: 'request';
+        if ( is_string($input) ) {
+            $type  = trim($input , '.') ?: 'request';
             $input = $this->app->request->$type();
         }
-        [$data, $rule, $info] = [[], [], []];
-        foreach ($rules as $name => $message) if (is_numeric($name)) {
-            [$name, $alias] = explode('#', $message . '#');
+        [$data , $rule , $info] = [[] , [] , []];
+        foreach ( $rules as $name => $message ) if ( is_numeric($name) ) {
+            [$name , $alias] = explode('#' , $message . '#');
             $data[$name] = $input[($alias ?: $name)] ?? null;
-        } elseif ( !str_contains($name , '.') ) {
+        } else if ( !str_contains($name , '.') ) {
             $data[$name] = $message;
-        } elseif (preg_match('|^(.*?)\.(.*?)#(.*?)#?$|', $name . '#', $matches)) {
-            [, $_key, $_rule, $alias] = $matches;
-            if (in_array($_rule, ['value', 'default'])) {
-                if ($_rule === 'value') $data[$_key] = $message;
-                elseif ($_rule === 'default') $data[$_key] = $input[($alias ?: $_key)] ?? $message;
+        } else if ( preg_match('|^(.*?)\.(.*?)#(.*?)#?$|' , $name . '#' , $matches) ) {
+            [, $_key , $_rule , $alias] = $matches;
+            if ( in_array($_rule , ['value' , 'default']) ) {
+                if ( $_rule === 'value' ) $data[$_key] = $message;
+                else if ( $_rule === 'default' ) $data[$_key] = $input[($alias ?: $_key)] ?? $message;
             } else {
-                $info[explode(':', $name)[0]] = $message;
-                $data[$_key] = $data[$_key] ?? ($input[($alias ?: $_key)] ?? null);
-                $rule[$_key] = isset($rule[$_key]) ? ($rule[$_key] . '|' . $_rule) : $_rule;
+                $info[explode(':' , $name)[0]] = $message;
+                $data[$_key]                   = $data[$_key] ?? ($input[($alias ?: $_key)] ?? null);
+                $rule[$_key]                   = isset($rule[$_key]) ? ($rule[$_key] . '|' . $_rule) : $_rule;
             }
         }
         $validate = new Validate();
-        if ($validate->rule($rule)->message($info)->check($data)) {
+        if ( $validate->rule($rule)->message($info)->check($data) ) {
             return $data;
-        } elseif (is_callable($callable)) {
-            return call_user_func($callable, $validate->getError());
+        } else if ( is_callable($callable) ) {
+            return call_user_func($callable , $validate->getError());
         } else {
             $this->class->error($validate->getError());
         }

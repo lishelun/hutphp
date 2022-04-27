@@ -1,11 +1,11 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\helper;
 
+use think\Model;
 use hutphp\Helper;
 use think\db\BaseQuery;
-use think\Model;
 
 class DeleteHelper extends Helper
 {
@@ -20,7 +20,7 @@ class DeleteHelper extends Helper
     public function init(string|BaseQuery|Model $name , string $pk = '' , array $where = []): ?bool
     {
         $query = $this->buildQuery($name);
-        $pk = $pk ?: ($query->getPk() ?: 'id');
+        $pk    = $pk ?: ($query->getPk() ?: 'id');
         $value = $this->app->request->param($pk , null);
 
         // 查询限制处理

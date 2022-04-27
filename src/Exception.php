@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp;
 
@@ -19,8 +19,8 @@ class Exception extends \Exception
      */
     public function __construct($message = "" , $code = 0 , $data = [])
     {
-        $this->code = $code;
-        $this->data = $data;
+        $this->code    = $code;
+        $this->data    = $data;
         $this->message = $message;
         parent::__construct($message , $code);
     }

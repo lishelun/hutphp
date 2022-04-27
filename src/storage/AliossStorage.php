@@ -1,11 +1,11 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\storage;
 
+use hutphp\Storage;
 use hutphp\Exception;
 use hutphp\extend\Curl;
-use hutphp\Storage;
 
 /**
  * 阿里云OSS存储支持
@@ -50,18 +50,18 @@ class AliossStorage extends Storage
     public function initialize()
     {
         // 读取配置文件
-        $this->point = config('storage.alioss.point');
-        $this->bucket = config('storage.alioss.bucket');
+        $this->point     = config('storage.alioss.point');
+        $this->bucket    = config('storage.alioss.bucket');
         $this->accessKey = config('storage.alioss.access_key');
         $this->secretKey = config('storage.alioss.secret_key');
         // 计算链接前缀
-        $type = strtolower(config('storage.alioss.protocol'));
+        $type   = strtolower(config('storage.alioss.protocol'));
         $domain = strtolower(config('storage.alioss.domain'));
         if ( $type === 'auto' ) {
-            $this->prefix = "//{$domain}";
+            $this->prefix   = "//{$domain}";
             $this->protocol = 'https';
-        } elseif ( in_array($type , ['http' , 'https']) ) {
-            $this->prefix = "{$type}://{$domain}";
+        } else if ( in_array($type , ['http' , 'https']) ) {
+            $this->prefix   = "{$type}://{$domain}";
             $this->protocol = $type;
         } else throw new Exception('未配置阿里云URL域名哦');
     }
@@ -87,11 +87,11 @@ class AliossStorage extends Storage
      */
     public function set(string $name , string $file , bool $safe = false , ?string $attname = null): array
     {
-        $token = $this->buildUploadToken($name);
-        $data = ['key' => $name];
-        $data['policy'] = $token['policy'];
-        $data['Signature'] = $token['signature'];
-        $data['OSSAccessKeyId'] = $this->accessKey;
+        $token                         = $this->buildUploadToken($name);
+        $data                          = ['key' => $name];
+        $data['policy']                = $token['policy'];
+        $data['Signature']             = $token['signature'];
+        $data['OSSAccessKeyId']        = $this->accessKey;
         $data['success_action_status'] = '200';
         if ( is_string($attname) && strlen($attname) > 0 ) {
             $data['Content-Disposition'] = 'inline;filename=' . urlencode($attname);
@@ -138,7 +138,7 @@ class AliossStorage extends Storage
      */
     public function has(string $name , bool $safe = false): bool
     {
-        $file = $this->delSuffix($name);
+        $file   = $this->delSuffix($name);
         $result = Curl::request('HEAD' , "{$this->protocol}://{$this->bucket}.{$this->point}/{$file}" , [
             'returnHeader' => true , 'headers' => $this->headerSign('HEAD' , $file) ,
         ]);
@@ -201,12 +201,12 @@ class AliossStorage extends Storage
      */
     public function buildUploadToken(string $name , int $expires = 3600 , ?string $attname = null): array
     {
-        $data = [
-            'policy' => base64_encode(json_encode([
-                'conditions' => [['content-length-range' , 0 , 1048576000]] ,
-                'expiration' => date('Y-m-d\TH:i:s.000\Z' , time() + $expires) ,
-            ])) ,
-            'keyid' => $this->accessKey ,
+        $data              = [
+            'policy'  => base64_encode(json_encode([
+                                                       'conditions' => [['content-length-range' , 0 , 1048576000]] ,
+                                                       'expiration' => date('Y-m-d\TH:i:s.000\Z' , time() + $expires) ,
+                                                   ])) ,
+            'keyid'   => $this->accessKey ,
             'siteurl' => $this->url($name , false , $attname) ,
         ];
         $data['signature'] = base64_encode(hash_hmac('sha1' , $data['policy'] , $this->secretKey , true));
@@ -230,12 +230,12 @@ class AliossStorage extends Storage
             $value = str_replace(["\r" , "\n"] , '' , $value);
             if ( in_array(strtolower($key) , ['content-md5' , 'content-type' , 'date']) ) {
                 $content .= "{$value}\n";
-            } elseif ( stripos($key , 'x-oss-') === 0 ) {
+            } else if ( stripos($key , 'x-oss-') === 0 ) {
                 $content .= strtolower($key) . ":{$value}\n";
             }
         }
-        $content = rawurldecode($content) . "/{$this->bucket}/{$source}";
-        $signature = base64_encode(hash_hmac('sha1' , $content , $this->secretKey , true));
+        $content                 = rawurldecode($content) . "/{$this->bucket}/{$source}";
+        $signature               = base64_encode(hash_hmac('sha1' , $content , $this->secretKey , true));
         $header['Authorization'] = "OSS {$this->accessKey}:{$signature}";
         foreach ( $header as $key => $value ) $header[$key] = "{$key}: {$value}";
         return array_values($header);
@@ -248,26 +248,26 @@ class AliossStorage extends Storage
     public static function region(): array
     {
         return [
-            'oss-cn-hangzhou.aliyuncs.com' => '华东 1（杭州）' ,
-            'oss-cn-shanghai.aliyuncs.com' => '华东 2（上海）' ,
-            'oss-cn-qingdao.aliyuncs.com' => '华北 1（青岛）' ,
-            'oss-cn-beijing.aliyuncs.com' => '华北 2（北京）' ,
+            'oss-cn-hangzhou.aliyuncs.com'    => '华东 1（杭州）' ,
+            'oss-cn-shanghai.aliyuncs.com'    => '华东 2（上海）' ,
+            'oss-cn-qingdao.aliyuncs.com'     => '华北 1（青岛）' ,
+            'oss-cn-beijing.aliyuncs.com'     => '华北 2（北京）' ,
             'oss-cn-zhangjiakou.aliyuncs.com' => '华北 3（张家口）' ,
-            'oss-cn-huhehaote.aliyuncs.com' => '华北 5（呼和浩特）' ,
-            'oss-cn-shenzhen.aliyuncs.com' => '华南 1（深圳）' ,
-            'oss-cn-chengdu.aliyuncs.com' => '西南 1（成都）' ,
-            'oss-cn-hongkong.aliyuncs.com' => '中国（香港）' ,
-            'oss-us-west-1.aliyuncs.com' => '美国西部 1（硅谷）' ,
-            'oss-us-east-1.aliyuncs.com' => '美国东部 1（弗吉尼亚）' ,
+            'oss-cn-huhehaote.aliyuncs.com'   => '华北 5（呼和浩特）' ,
+            'oss-cn-shenzhen.aliyuncs.com'    => '华南 1（深圳）' ,
+            'oss-cn-chengdu.aliyuncs.com'     => '西南 1（成都）' ,
+            'oss-cn-hongkong.aliyuncs.com'    => '中国（香港）' ,
+            'oss-us-west-1.aliyuncs.com'      => '美国西部 1（硅谷）' ,
+            'oss-us-east-1.aliyuncs.com'      => '美国东部 1（弗吉尼亚）' ,
             'oss-ap-southeast-1.aliyuncs.com' => '亚太东南 1（新加坡）' ,
             'oss-ap-southeast-2.aliyuncs.com' => '亚太东南 2（悉尼）' ,
             'oss-ap-southeast-3.aliyuncs.com' => '亚太东南 3（吉隆坡）' ,
             'oss-ap-southeast-5.aliyuncs.com' => '亚太东南 5（雅加达）' ,
             'oss-ap-northeast-1.aliyuncs.com' => '亚太东北 1（日本）' ,
-            'oss-ap-south-1.aliyuncs.com' => '亚太南部 1（孟买）' ,
-            'oss-eu-central-1.aliyuncs.com' => '欧洲中部 1（法兰克福）' ,
-            'oss-eu-west-1.aliyuncs.com' => '英国（伦敦）' ,
-            'oss-me-east-1.aliyuncs.com' => '中东东部 1（迪拜）' ,
+            'oss-ap-south-1.aliyuncs.com'     => '亚太南部 1（孟买）' ,
+            'oss-eu-central-1.aliyuncs.com'   => '欧洲中部 1（法兰克福）' ,
+            'oss-eu-west-1.aliyuncs.com'      => '英国（伦敦）' ,
+            'oss-me-east-1.aliyuncs.com'      => '中东东部 1（迪拜）' ,
         ];
     }
 }

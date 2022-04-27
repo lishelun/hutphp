@@ -13,9 +13,9 @@ declare (strict_types = 1);
 namespace think\middleware;
 
 use Closure;
-use think\exception\ValidateException;
 use think\Request;
 use think\Response;
+use think\exception\ValidateException;
 
 /**
  * 表单令牌支持
@@ -31,11 +31,11 @@ class FormTokenCheck
      * @param string  $token 表单令牌Token名称
      * @return Response
      */
-    public function handle(Request $request, Closure $next, string $token = null)
+    public function handle(Request $request , Closure $next , string $token = null)
     {
         $check = $request->checkToken($token ?: '__token__');
 
-        if (false === $check) {
+        if ( false === $check ) {
             throw new ValidateException('invalid token');
         }
 

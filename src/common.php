@@ -25,15 +25,15 @@ if ( !function_exists('uri') ) {
         $pre = app()->route->buildUrl('@')->suffix(false)->domain($domain)->build();
         $uri = app()->route->buildUrl($url , $vars)->suffix($suffix)->domain($domain)->build();
         // 默认节点配置数据
-        $app = app()->config->get('app.default_app');
+        $app        = app()->config->get('app.default_app');
         $controller = \think\helper\Str::snake(app()->config->get('route.default_controller'));
-        $action = \think\helper\Str::lower(app()->config->get('route.default_action'));
+        $action     = \think\helper\Str::lower(app()->config->get('route.default_action'));
         // 替换省略链接路径
         return preg_replace([
-            "#^({$pre}){$app}/{$controller}/{$action}(\.{$ext}|^\w|\?|$)?#i" ,
-            "#^({$pre}[\w\.]+)/{$controller}/{$action}(\.{$ext}|^\w|\?|$)#i" ,
-            "#^({$pre}[\w\.]+)(/[\w\.]+)/{$action}(\.{$ext}|^\w|\?|$)#i" ,
-        ] , ['$1$2' , '$1$2' , '$1$2$3'] , $uri);
+                                "#^({$pre}){$app}/{$controller}/{$action}(\.{$ext}|^\w|\?|$)?#i" ,
+                                "#^({$pre}[\w\.]+)/{$controller}/{$action}(\.{$ext}|^\w|\?|$)#i" ,
+                                "#^({$pre}[\w\.]+)(/[\w\.]+)/{$action}(\.{$ext}|^\w|\?|$)#i" ,
+                            ] , ['$1$2' , '$1$2' , '$1$2$3'] , $uri);
     }
 }
 if ( !function_exists('virtual_model') ) {
@@ -53,7 +53,7 @@ if ( !function_exists('M') ) {
             $model = 'hutcms\\model\\' . $name;
             if ( class_exists($name) ) return new $model($data);
         }
-        $name=basename(str_replace('\\','/',$name));
+        $name = basename(str_replace('\\' , '/' , $name));
         $name = \think\helper\Str::studly($name);
         if ( !class_exists($class = "virtual\\model\\_{$con}\\{$name}") ) {
             return virtual_model($name , $data , $con);
@@ -95,7 +95,7 @@ if ( !function_exists('optimize_runtime') ) {
         $connection = app()->db->getConfig('default');
         app()->console->call("optimize:schema" , ["--connection={$connection}"]);
         $base_path = app()->getBasePath();
-        $data = [];
+        $data      = [];
         foreach ( scandir($base_path) as $item ) if ( $item[0] !== '.' ) {
             if ( is_dir(realpath($base_path . $item)) ) $data[] = $item;
         }
@@ -187,18 +187,18 @@ if ( !function_exists('data_save') ) {
      */
     function data_save(string|\think\db\BaseQuery|\think\Model $query , array &$data , string $pk = 'id' , array $where = []): bool|int
     {
-        $val = (isset($data[$pk]) && $data[$pk]) ? $data[$pk] : null;
+        $val   = (isset($data[$pk]) && $data[$pk]) ? $data[$pk] : null;
         $query = \hutphp\Helper::buildQuery($query)->master()->strict(false)->where($where);
         if ( empty($where[$pk]) ) {
             if ( is_string($val) && str_contains($val , ',') ) {
                 $query->whereIn($pk , explode(',' , $val));
-            } elseif ( is_array($val) ) {
+            } else if ( is_array($val) ) {
                 $query->whereIn($pk , $val);
             } else {
                 $query->where([$pk => $val]);
             }
         }
-        $model = $query->findOrEmpty();
+        $model  = $query->findOrEmpty();
         $method = $model->isExists() ? 'onUpdate' : 'onInsert';
         if ( $model->save($data) === false ) return false;
         if ( $model instanceof \hutphp\Model && is_callable([$model , $method]) ) {
@@ -259,9 +259,9 @@ if ( !function_exists('format_clicks') ) {
     {
         if ( $num >= 1000 && $num < 100000 ) {
             $num = number_format($num / 1000 , 2) . 'k';
-        } elseif ( $num >= 100000 && $num < 100000000 ) {
+        } else if ( $num >= 100000 && $num < 100000000 ) {
             $num = number_format($num / 10000 , 2) . 'w';
-        } elseif ( $num >= 100000000 ) {
+        } else if ( $num >= 100000000 ) {
             $num = number_format($num / 100000000 , 2) . 'b';
         }
         return $num;
@@ -294,10 +294,10 @@ if ( !function_exists('get_article_intro') ) {
         $contents = "";
         if ( isset($list[0]) && count($list[0]) > 0 ) {
             foreach ( $list[0] as $html ) {
-                $html = htmlspecialchars_decode($html);
-                $html = str_replace([" " , "&nbsp;"] , "" , $html);
+                $html     = htmlspecialchars_decode($html);
+                $html     = str_replace([" " , "&nbsp;"] , "" , $html);
                 $contents .= strip_tags($html) . "\r\n";
-                $len = mb_strlen($contents);
+                $len      = mb_strlen($contents);
                 if ( $len > 0 ) {
                     if ( $len > $length ) {
                         $contents = mb_substr($contents , 0 , $length);
@@ -320,7 +320,7 @@ if ( !function_exists('encode2utf8') ) {
     function encode2utf8($str): bool|string
     {
         $targetEncode = "UTF-8";
-        $encode = mb_detect_encoding($str);
+        $encode       = mb_detect_encoding($str);
         if ( $encode != $targetEncode ) {
             return iconv($encode , $targetEncode , $str);
         }
@@ -380,8 +380,8 @@ if ( !function_exists('cutstr') ) {
         if ( strlen($string) <= $length ) {
             return $string;
         }
-        $pre = chr(1);
-        $end = chr(1);
+        $pre    = chr(1);
+        $end    = chr(1);
         $string = str_replace(['&amp;' , '&quot;' , '&lt;' , '&gt;'] , [$pre . '&' . $end , $pre . '"' . $end , $pre . '<' . $end , $pre . '>' . $end] , $string);
         $strcut = '';
         if ( strtolower(CHARSET) == 'utf-8' ) {
@@ -392,25 +392,25 @@ if ( !function_exists('cutstr') ) {
                     $tn = 1;
                     $n++;
                     $noc++;
-                } elseif ( 194 <= $t && $t <= 223 ) {
-                    $tn = 2;
-                    $n += 2;
+                } else if ( 194 <= $t && $t <= 223 ) {
+                    $tn  = 2;
+                    $n   += 2;
                     $noc += 2;
-                } elseif ( 224 <= $t && $t <= 239 ) {
-                    $tn = 3;
-                    $n += 3;
+                } else if ( 224 <= $t && $t <= 239 ) {
+                    $tn  = 3;
+                    $n   += 3;
                     $noc += 2;
-                } elseif ( 240 <= $t && $t <= 247 ) {
-                    $tn = 4;
-                    $n += 4;
+                } else if ( 240 <= $t && $t <= 247 ) {
+                    $tn  = 4;
+                    $n   += 4;
                     $noc += 2;
-                } elseif ( 248 <= $t && $t <= 251 ) {
-                    $tn = 5;
-                    $n += 5;
+                } else if ( 248 <= $t && $t <= 251 ) {
+                    $tn  = 5;
+                    $n   += 5;
                     $noc += 2;
-                } elseif ( $t == 252 || $t == 253 ) {
-                    $tn = 6;
-                    $n += 6;
+                } else if ( $t == 252 || $t == 253 ) {
+                    $tn  = 6;
+                    $n   += 6;
                     $noc += 2;
                 } else {
                     $n++;
@@ -429,13 +429,13 @@ if ( !function_exists('cutstr') ) {
             for ( $i = 0 ; $i < $length ; $i++ ) {
                 if ( ord($string[$i]) <= 127 ) {
                     $strcut .= $string[$i];
-                } elseif ( $i < $_length ) {
+                } else if ( $i < $_length ) {
                     $strcut .= $string[$i] . $string[++$i];
                 }
             }
         }
         $strcut = str_replace([$pre . '&' . $end , $pre . '"' . $end , $pre . '<' . $end , $pre . '>' . $end] , ['&amp;' , '&quot;' , '&lt;' , '&gt;'] , $strcut);
-        $pos = strrpos($strcut , chr(1));
+        $pos    = strrpos($strcut , chr(1));
         if ( $pos !== false ) {
             $strcut = substr($strcut , 0 , $pos);
         }
@@ -586,7 +586,7 @@ if ( !function_exists('dispatch') ) {
             abort(500 , 'dispatch need param of controller');
         }
         if ( is_array($controller) ) {
-            $action = $controller[1] ?? null;
+            $action     = $controller[1] ?? null;
             $controller = $controller[0];
         }
         if ( $app ) {

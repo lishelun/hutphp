@@ -1,11 +1,11 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\helper;
 
+use think\Model;
 use hutphp\Helper;
 use think\db\BaseQuery;
-use think\Model;
 
 class PageHelper extends Helper
 {
@@ -25,16 +25,16 @@ class PageHelper extends Helper
                     $this->app->cookie->set('limit' , ($limit = intval($limit >= 5 ? $limit : 20)) . '');
                 }
             }
-            $get = $this->app->request->get();
+            $get    = $this->app->request->get();
             $prefix = '';
             // 生成分页数据
-            $data = ($paginate = $this->autoSortQuery($dbQuery)->paginate(['list_rows' => $limit , 'query' => $get] , $total))->toArray();
+            $data   = ($paginate = $this->autoSortQuery($dbQuery)->paginate(['list_rows' => $limit , 'query' => $get] , $total))->toArray();
             $result = ['page' => ['limit' => $data['per_page'] , 'count' => $data['total'] , 'pages' => $data['last_page'] , 'current' => $data['current_page']] , 'data' => $data['data']];
             // 分页跳转参数
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
             if ( in_array($limit , $limits) ) foreach ( $limits as $num ) {
-                $url = $this->app->request->baseUrl() . '?' . http_build_query(array_merge($get , ['limit' => $num , 'page' => 1]));
-                $select .= sprintf(`<option data-num="%d" value="%s" %s >%d</option>`, $num , $prefix . $url , $limit === $num ? 'selected' : '' , $num);
+                $url    = $this->app->request->baseUrl() . '?' . http_build_query(array_merge($get , ['limit' => $num , 'page' => 1]));
+                $select .= sprintf(`<option data-num="%d" value="%s" %s >%d</option>` , $num , $prefix . $url , $limit === $num ? 'selected' : '' , $num);
             } else {
                 $select .= "<option selected>{$limit}</option>";
             }
@@ -42,7 +42,7 @@ class PageHelper extends Helper
             $link = $paginate->render() ?: '';
             $this->class->assign('pagehtml' , "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
-            $count = (clone $this->autoSortQuery($dbQuery))->count();
+            $count  = (clone $this->autoSortQuery($dbQuery))->count();
             $result = ['data' => $this->autoSortQuery($dbQuery)->select()->toArray() , 'count' => $count];
         }
         if ( false !== $this->class->callback('_page_filter' , $result['list']) && $display ) {

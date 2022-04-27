@@ -1,15 +1,15 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp;
 
 use Closure;
-use hutphp\service\AdminService;
-use think\middleware\LoadLangPack;
-use think\middleware\SessionInit;
 use think\Request;
 use think\Service;
+use hutphp\service\AdminService;
+use think\middleware\SessionInit;
+use think\middleware\LoadLangPack;
 
 class Boot extends Service
 {
@@ -18,9 +18,11 @@ class Boot extends Service
     public function boot()
     {
         $this->app->event->listen('HttpRun' , function (Request $request) {
-            $request->filter([function ($value) {
-                return is_string($value) ? trim(xss_safe($value)) : $value;
-            }]);
+            $request->filter([
+                                 function ($value) {
+                                     return is_string($value) ? trim(xss_safe($value)) : $value;
+                                 }
+                             ]);
             if ( $request->isCli() ) {
                 if ( empty($_SERVER['REQUEST_URI']) && isset($_SERVER['argv'][1]) ) {
                     $request->setPathinfo($_SERVER['argv'][1]);
@@ -53,20 +55,19 @@ class Boot extends Service
             $this->app->middleware->add(function (Request $request , Closure $next) {
                 $header = [];
                 if ( ($origin = $request->header('origin' , '*')) !== '*' ) {
-                    $header['Access-Control-Allow-Origin'] = $origin;
-                    $header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,PATCH,DELETE';
-                    $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
-                    $header['Access-Control-Expose-Headers'] = 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
+                    $header['Access-Control-Allow-Origin']      = $origin;
+                    $header['Access-Control-Allow-Methods']     = 'GET,PUT,POST,PATCH,DELETE';
+                    $header['Access-Control-Allow-Headers']     = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
+                    $header['Access-Control-Expose-Headers']    = 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
                     $header['Access-Control-Allow-Credentials'] = 'true';
                 }
                 if ( in_array(app()->http->getName() , app()->config->get('app.auth_app' , [])) ) {
 
                     $check = app()->http->getName() . '@' . $request->controller(true) . '/' . $request->action(true);
                     //排除验证
-                    if($request->isOptions()){
+                    if ( $request->isOptions() ) {
                         return response()->code(204)->header($header);
-                    }
-                    else if ( in_array(strtolower($check) , array_map(function ($val) {
+                    } else if ( in_array(strtolower($check) , array_map(function ($val) {
                         return strtolower($val);
                     } , app()->config->get('app.deny_auth_list'))) ) {
                         return $next($request)->header($header);

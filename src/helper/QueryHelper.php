@@ -1,11 +1,11 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\helper;
 
 use hutphp\Helper;
-use think\db\BaseQuery;
 use think\facade\Db;
+use think\db\BaseQuery;
 
 /**
  * 查询处理器
@@ -13,7 +13,7 @@ use think\facade\Db;
  */
 class QueryHelper extends Helper
 {
-    public array $input;
+    public array     $input;
     public BaseQuery $query;
     /**
      * Query方法返回值的方法列表
@@ -133,10 +133,10 @@ class QueryHelper extends Helper
     public function list(string $order = null , int $limit = null , int $page = null): array
     {
         $limit = $limit == null ? request()->param('limit/d') : $limit;
-        $page = $page == null ? request()->param('page/d') : $page;
+        $page  = $page == null ? request()->param('page/d') : $page;
         if ( method_exists($this->query , 'getTableFields') ) {
             $soft_delete_field = null;
-            $fields = $this->query->getTableFields();
+            $fields            = $this->query->getTableFields();
             if ( in_array('delete_time' , $fields) ) $soft_delete_field = 'delete_time';
             else if ( in_array('deleted' , $fields) ) $soft_delete_field = 'deleted';
             else if ( in_array('is_deleted' , $fields) ) $soft_delete_field = 'is_deleted';
@@ -153,7 +153,7 @@ class QueryHelper extends Helper
                 $this->query->order($pk , 'desc');
             }
         }
-        $list = $this->query->page($page , $limit)->select();
+        $list   = $this->query->page($page , $limit)->select();
         $result = ['data' => $list->toArray() , 'count' => $count];
         if ( false !== $this->class->callback('_list_filter' , $result) ) {
             $this->class->success('ok' , $result);

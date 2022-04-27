@@ -1,5 +1,5 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\extend;
 
@@ -65,7 +65,7 @@ class Code
      */
     public static function encrypt(mixed $data , string $key): string
     {
-        $iv = static::random(16 , 3);
+        $iv    = static::random(16 , 3);
         $value = openssl_encrypt(serialize($data) , 'AES-256-CBC' , $key , 0 , $iv);
         return static::enSafe64(json_encode(['iv' => $iv , 'value' => $value]));
     }

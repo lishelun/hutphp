@@ -1,14 +1,14 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp;
 
-use hutphp\helper\DeleteHelper;
+use think\Container;
+use hutphp\helper\SaveHelper;
 use hutphp\helper\FormHelper;
 use hutphp\helper\QueryHelper;
-use hutphp\helper\SaveHelper;
-use think\Container;
+use hutphp\helper\DeleteHelper;
 
 abstract class Model extends \think\Model
 {
@@ -39,12 +39,17 @@ abstract class Model extends \think\Model
     {
         return new static($data);
     }
-    public static function mk(array $data=[]):static{
+
+    public static function mk(array $data = []): static
+    {
         return static::make($data);
     }
-    public static function instance(array $data=[]):static{
+
+    public static function instance(array $data = []): static
+    {
         return static::make($data);
     }
+
     /**
      * 调用魔术方法
      * @param string $method 方法名称
@@ -54,14 +59,14 @@ abstract class Model extends \think\Model
     public function __call($method , $args)
     {
         $list = [
-            'onAdminSave'   => "修改{$this->logName}[%s]状态",
-            'onAdminUpdate' => "更新{$this->logName}[%s]记录",
-            'onAdminInsert' => "增加{$this->logName}[%s]成功",
-            'onAdminDelete' => "删除{$this->logName}[%s]成功",
-            'onInsert' => "增加{$this->logName}[%s]成功",
-            'onUpdate' => "更新{$this->logName}[%s]成功",
-            'onDelete' => "删除{$this->logName}[%s]成功",
-            'onSave' => "修改{$this->logName}[%s]成功"
+            'onAdminSave'   => "修改{$this->logName}[%s]状态" ,
+            'onAdminUpdate' => "更新{$this->logName}[%s]记录" ,
+            'onAdminInsert' => "增加{$this->logName}[%s]成功" ,
+            'onAdminDelete' => "删除{$this->logName}[%s]成功" ,
+            'onInsert'      => "增加{$this->logName}[%s]成功" ,
+            'onUpdate'      => "更新{$this->logName}[%s]成功" ,
+            'onDelete'      => "删除{$this->logName}[%s]成功" ,
+            'onSave'        => "修改{$this->logName}[%s]成功"
         ];
         if ( isset($list[$method]) ) {
             if ( $this->logType && $this->logName ) {
@@ -86,9 +91,9 @@ abstract class Model extends \think\Model
     public static function __callStatic($method , $args)
     {
         $helpers = [
-            '_form' => [FormHelper::class , 'init'] ,
-            '_save' => [SaveHelper::class , 'init'] ,
-            '_query' => [QueryHelper::class , 'init'] ,
+            '_form'   => [FormHelper::class , 'init'] ,
+            '_save'   => [SaveHelper::class , 'init'] ,
+            '_query'  => [QueryHelper::class , 'init'] ,
             '_delete' => [DeleteHelper::class , 'init']
         ];
         if ( isset($helpers[$method]) ) {

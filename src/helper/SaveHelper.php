@@ -1,5 +1,5 @@
 <?php
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\helper;
 
@@ -18,8 +18,8 @@ class SaveHelper extends Helper
     public function init($dbQuery , array $data = [] , string $pk = '' , array $where = []): bool
     {
         $query = $this->buildQuery($dbQuery)->master()->strict(false);
-        $pk = $pk ?: ($query->getPk() ?: 'id');
-        $data = $data ?: $this->app->request->post();
+        $pk    = $pk ?: ($query->getPk() ?: 'id');
+        $data  = $data ?: $this->app->request->post();
         $value = $this->app->request->post($pk);
 
         // 主键限制处理
@@ -34,7 +34,7 @@ class SaveHelper extends Helper
         }
 
         // 检查原始数据
-        $model = $query->where($where)->findOrEmpty();
+        $model  = $query->where($where)->findOrEmpty();
         $result = $model->save($data);
         if ( $result && method_exists($model , 'onAdminSave') ) {
             $model->onAdminSave(strval($value));

@@ -1,14 +1,14 @@
 <?php
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace hutphp\helper;
 
-use hutphp\Controller;
-use hutphp\Helper;
 use think\App;
-use think\db\exception\DbException;
+use hutphp\Helper;
 use think\facade\Db;
+use hutphp\Controller;
+use think\db\exception\DbException;
 
 /**
  * 数据表助手
@@ -17,7 +17,7 @@ use think\facade\Db;
 class TableHelper extends Helper
 {
     protected string $prefix;
-    protected array $config;
+    protected array  $config;
     protected string $table;
 
     /**
@@ -83,18 +83,18 @@ class TableHelper extends Helper
     }
 
     /**
-     * @param string    $pk     主键
-     * @param bool      $auto   是否自增
-     * @param string    $type   主键类型
-     * @param int|array $length 主键长度
-     * @param string    $engine 引擎 默认InnoDB
+     * @param string    $pk      主键
+     * @param bool      $auto    是否自增
+     * @param string    $type    主键类型
+     * @param int|array $length  主键长度
+     * @param string    $engine  引擎 默认InnoDB
      * @param string    $charset 字符集
      * @param string    $order   排序规则
      * @return bool
      */
-    public function createTable(string $pk = 'id' , bool $auto = true , string $type = 'int' , int|array $length = 0 , string $engine = 'InnoDB',string $charset='',string $order=''): bool
+    public function createTable(string $pk = 'id' , bool $auto = true , string $type = 'int' , int|array $length = 0 , string $engine = 'InnoDB' , string $charset = '' , string $order = ''): bool
     {
-        return $this->execute('CREATE TABLE IF NOT EXISTS `:table` (`:pk`  :type:length NOT NULL :auto_increment ,PRIMARY KEY (`:pk`)) :engine :charset :order;' , ['table' => $this->table , 'pk' => $pk , 'auto_increment' => $auto ? 'AUTO_INCREMENT' : '' , 'type' => $type ? $type : 'int' , 'length' => $this->getLengthSqlString($length , $type) , 'engine' => $engine ? 'ENGINE=' . $engine : '','charset'=>$charset?"CHARACTER SET={$charset}":'','order'=>$charset&&$order?"COLLATE={$order}":'']);
+        return $this->execute('CREATE TABLE IF NOT EXISTS `:table` (`:pk`  :type:length NOT NULL :auto_increment ,PRIMARY KEY (`:pk`)) :engine :charset :order;' , ['table' => $this->table , 'pk' => $pk , 'auto_increment' => $auto ? 'AUTO_INCREMENT' : '' , 'type' => $type ? $type : 'int' , 'length' => $this->getLengthSqlString($length , $type) , 'engine' => $engine ? 'ENGINE=' . $engine : '' , 'charset' => $charset ? "CHARACTER SET={$charset}" : '' , 'order' => $charset && $order ? "COLLATE={$order}" : '']);
     }
 
     /**
@@ -184,19 +184,19 @@ class TableHelper extends Helper
     public function addColumn(string $name , string $type = 'varchar' , array|int $length = 255 , bool $isnull = true , string $default = '' , bool $auto_increment = false , bool $unsigned = false , string $comment = '' , string $after = '' , string $charset = '' , string $order = '' , bool $binary = false): bool
     {
         $bind = [
-            'after' => $after ? " AFTER `{$after}`" : '' ,
-            'charset' => $charset ? " CHARACTER SET {$charset}" : '' ,
-            'order' => $order ? " COLLATE {$order}" : '' ,
-            'length' => $this->getLengthSqlString($length , $type) ,
-            'isnull' => $isnull ? ' NULL' : ' NOT NULL' ,
+            'after'          => $after ? " AFTER `{$after}`" : '' ,
+            'charset'        => $charset ? " CHARACTER SET {$charset}" : '' ,
+            'order'          => $order ? " COLLATE {$order}" : '' ,
+            'length'         => $this->getLengthSqlString($length , $type) ,
+            'isnull'         => $isnull ? ' NULL' : ' NOT NULL' ,
             'auto_increment' => $auto_increment ? ' AUTO_INCREMENT' : '' ,
-            'unsigned' => $unsigned ? ' UNSIGNED' : '' ,
-            'default' => strlen($default) > 0 ? "DEFAULT '{$default}' " : '' ,
-            'table' => $this->table ,
-            'name' => $name ,
-            'comment' => $comment ? "COMMENT '{$comment}'" : '' ,
-            'binary' => $binary ? 'BINARY' : '' ,
-            'type' => $type
+            'unsigned'       => $unsigned ? ' UNSIGNED' : '' ,
+            'default'        => strlen($default) > 0 ? "DEFAULT '{$default}' " : '' ,
+            'table'          => $this->table ,
+            'name'           => $name ,
+            'comment'        => $comment ? "COMMENT '{$comment}'" : '' ,
+            'binary'         => $binary ? 'BINARY' : '' ,
+            'type'           => $type
         ];
         return $this->execute('ALTER TABLE `:table` ADD COLUMN `:name`  :type:length :binary :charset :order :unsigned :default :isnull :comment :after' , $bind);
     }
@@ -220,21 +220,21 @@ class TableHelper extends Helper
     public function changeColumn(string $name , string $new_name = '' , string $type = 'varchar' , array|int $length = 255 , bool $isnull = true , string $default = '' , bool $auto_increment = false , bool $unsigned = false , string $comment = '' , string $after = '' , string $charset = '' , string $order = '' , bool $binary = false): bool
     {
         $bind = [
-            'after' => $after ? " AFTER `{$after}`" : '' ,
-            'charset' => $charset ? " CHARACTER SET {$charset}" : '' ,
-            'order' => $order ? " COLLATE {$order}" : '' ,
-            'length' => $this->getLengthSqlString($length , $type) ,
-            'isnull' => $isnull ? ' NULL' : ' NOT NULL' ,
+            'after'          => $after ? " AFTER `{$after}`" : '' ,
+            'charset'        => $charset ? " CHARACTER SET {$charset}" : '' ,
+            'order'          => $order ? " COLLATE {$order}" : '' ,
+            'length'         => $this->getLengthSqlString($length , $type) ,
+            'isnull'         => $isnull ? ' NULL' : ' NOT NULL' ,
             'auto_increment' => $auto_increment ? ' AUTO_INCREMENT' : '' ,
-            'unsigned' => $unsigned ? ' UNSIGNED' : '' ,
-            'default' => strlen($default) > 0 ? "DEFAULT '{$default}' " : '' ,
-            'table' => $this->table ,
-            'name' => $name ,
-            'comment' => $comment ? "COMMENT '{$comment}'" : '' ,
-            'binary' => $binary ? 'BINARY' : '' ,
-            'type' => $type ,
-            'new_name' => $new_name && $new_name != $name ? "`{$new_name}`" : '' ,
-            'change' => $new_name ? 'CHANGE' : 'MODIFY'
+            'unsigned'       => $unsigned ? ' UNSIGNED' : '' ,
+            'default'        => strlen($default) > 0 ? "DEFAULT '{$default}' " : '' ,
+            'table'          => $this->table ,
+            'name'           => $name ,
+            'comment'        => $comment ? "COMMENT '{$comment}'" : '' ,
+            'binary'         => $binary ? 'BINARY' : '' ,
+            'type'           => $type ,
+            'new_name'       => $new_name && $new_name != $name ? "`{$new_name}`" : '' ,
+            'change'         => $new_name ? 'CHANGE' : 'MODIFY'
         ];
         return $this->execute('ALTER TABLE `:table` :change COLUMN `:name` :new_name  :type:length :binary :charset :order :unsigned :default :isnull :comment :after' , $bind);
     }
@@ -259,16 +259,16 @@ class TableHelper extends Helper
      */
     public function addIndex(array|string $field , string $index_name = '' , string $type = 'NORMAL' , string $using = 'BTREE'): bool
     {
-        $using = strtoupper($type) == 'FULLTEXT' ? '' : 'USING ' . $using;
-        $type = $type == 'NORMAL' ? '' : $type;
+        $using  = strtoupper($type) == 'FULLTEXT' ? '' : 'USING ' . $using;
+        $type   = $type == 'NORMAL' ? '' : $type;
         $extend = strtoupper($type) == 'FULLTEXT' ? ' with parser ngram ' : '';
-        $bind = [
-            'table' => $this->table ,
-            'type' => $type ,
+        $bind   = [
+            'table'      => $this->table ,
+            'type'       => $type ,
             'index_name' => $index_name ?: $this->getIndexName($field) ,
-            'fields' => $this->getIndexFieldText($field) ,
-            'extend'=>$extend,
-            'using' => $using
+            'fields'     => $this->getIndexFieldText($field) ,
+            'extend'     => $extend ,
+            'using'      => $using
         ];
         return $this->execute('ALTER TABLE `:table` ADD :type INDEX `:index_name` (:fields) :extend :using ;' , $bind);
     }
