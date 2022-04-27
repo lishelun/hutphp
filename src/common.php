@@ -43,14 +43,19 @@ if ( !function_exists('virtual_model') ) {
     }
 }
 if ( !function_exists('M') ) {
-    function Model(string $name , array $data = [] , string $con = ''): \think\Model
+    function M(string $name , array $data = [] , string $con = ''): \think\Model
     {
         if ( str_contains($name , '\\') ) {
             if ( class_exists($name) ) return new $name($data);
             $name = basename(str_replace('\\' , '//' , $name));
+        } else {
+            //添加hutcms模型支持
+            $model = 'hutcms\\model\\' . $name;
+            if ( class_exists($name) ) return new $model($data);
         }
+        $name=basename(str_replace('\\','/',$name));
         $name = \think\helper\Str::studly($name);
-        if ( !class_exists($class = "virtual\\model\\{$name}") ) {
+        if ( !class_exists($class = "virtual\\model\\_{$con}\\{$name}") ) {
             return virtual_model($name , $data , $con);
         } else {
             return new $class($data);
