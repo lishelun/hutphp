@@ -43,7 +43,7 @@ class LoadLangPack
      * @param Closure $next
      * @return Response
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         // 自动侦测当前语言
         $langset = $this->detect($request);
@@ -52,7 +52,9 @@ class LoadLangPack
             $this->lang->switchLangSet($langset);
         }
 
-        $this->saveToCookie($this->app->cookie, $langset);
+        $cookie_lang_set=$request->cookie($this->config['cookie_var']);
+
+        $cookie_lang_set!=$langset&&$this->saveToCookie($this->app->cookie, $langset);
 
         return $next($request);
     }
