@@ -14,25 +14,30 @@ abstract class Model extends \think\Model
 {
     /**
      * 日志类型
-     * @var string
+     *
+     * @var string|null
      */
-    protected string $logType;
+    protected ?string $logType = null;
 
     /**
      * 日志名称
-     * @var string
+     *
+     * @var string|null
      */
-    protected string $logName;
+    protected ?string $logName = null;
 
     /**
      * 日志过滤
+     *
      * @var callable
      */
     public static $logCall;
 
     /**
      * 创建模型实例
+     *
      * @param array $data
+     *
      * @return static
      */
     public static function make(array $data = []): static
@@ -50,15 +55,15 @@ abstract class Model extends \think\Model
         return static::make($data);
     }
 
-    /**
-     * 调用魔术方法
-     * @param string $method 方法名称
-     * @param array  $args   调用参数
-     * @return $this|false|mixed
-     */
-    public function __call($method , $args)
+    public function __construct(array $data = [])
     {
-        $list = [
+        parent::__construct($data);
+        $this->logName = $this->logName ?: $this->name;
+    }
+
+    protected function getLogMethodStringList(): array
+    {
+        return [
             'onAdminSave'   => "修改{$this->logName}[%s]状态" ,
             'onAdminUpdate' => "更新{$this->logName}[%s]记录" ,
             'onAdminInsert' => "增加{$this->logName}[%s]成功" ,
@@ -68,13 +73,29 @@ abstract class Model extends \think\Model
             'onDelete'      => "删除{$this->logName}[%s]成功" ,
             'onSave'        => "修改{$this->logName}[%s]成功"
         ];
+    }
+
+    /**
+     * 调用魔术方法
+     *
+     * @param string $method 方法名称
+     * @param array  $args   调用参数
+     *
+     * @return $this|false|mixed
+     */
+    public function __call($method , $args)
+    {
+
+        $list = $this->getLogMethodStringList();
         if ( isset($list[$method]) ) {
             if ( $this->logType && $this->logName ) {
                 $ids = $args[0] ?? '';
                 if ( is_callable(static::$logCall) ) {
                     $ids = call_user_func(static::$logCall , $method , $ids , $this);
                 }
-                hutlog($this->logType , sprintf($list[$method] , $ids));
+                if ( config('app.open_hutcms_model_log' , false) ) {
+                    function_exists('hut_log') && hut_log($this->logType , sprintf($list[$method] , $ids));
+                }
             }
             return $this;
         } else {
@@ -84,8 +105,10 @@ abstract class Model extends \think\Model
 
     /**
      * 静态魔术方法
+     *
      * @param string $method 方法名称
      * @param array  $args   调用参数
+     *
      * @return mixed|false|integer|QueryHelper
      */
     public static function __callStatic($method , $args)
