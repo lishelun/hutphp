@@ -176,13 +176,15 @@ if ( !function_exists('http_post') ) {
 if ( !function_exists('data_save') ) {
     /**
      * 数据增量保存
+     *
      * @param think\db\BaseQuery|string|think\Model $query
      * @param array                                 $data  需要保存或更新的数据
      * @param string                                $pk    条件主键限制
      * @param array                                 $where 其它查询条件
-     * @return boolean|integer
+     *
+     * @return bool
      */
-    function data_save(string|\think\db\BaseQuery|\think\Model $query , array $data , string $pk = 'id' , array $where = []): bool|int
+    function data_save(string|\think\db\BaseQuery|\think\Model $query , array $data , string $pk = 'id' , array $where = []): bool
     {
         $val   = (isset($data[$pk]) && $data[$pk]) ? $data[$pk] : null;
         $query = \hutphp\Helper::buildQuery($query)->master()->strict(false)->where($where);
