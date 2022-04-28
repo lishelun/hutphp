@@ -181,15 +181,12 @@ if ( !function_exists('data_save') ) {
      * @param string                                $pk    条件主键限制
      * @param array                                 $where 其它查询条件
      * @return boolean|integer
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
-    function data_save(string|\think\db\BaseQuery|\think\Model $query , array &$data , string $pk = 'id' , array $where = []): bool|int
+    function data_save(string|\think\db\BaseQuery|\think\Model $query , array $data , string $pk = 'id' , array $where = []): bool|int
     {
         $val   = (isset($data[$pk]) && $data[$pk]) ? $data[$pk] : null;
         $query = \hutphp\Helper::buildQuery($query)->master()->strict(false)->where($where);
-        if ( empty($where[$pk]) ) {
+        if ( empty($where[$pk]) && !empty($val)) {
             if ( is_string($val) && str_contains($val , ',') ) {
                 $query->whereIn($pk , explode(',' , $val));
             } else if ( is_array($val) ) {
@@ -199,13 +196,7 @@ if ( !function_exists('data_save') ) {
             }
         }
         $model  = $query->findOrEmpty();
-        $method = $model->isExists() ? 'onUpdate' : 'onInsert';
-        if ( $model->save($data) === false ) return false;
-        if ( $model instanceof \hutphp\Model && is_callable([$model , $method]) ) {
-            $model->$method(strval($model[$pk] ?? ''));
-        }
-        $data = $model->toArray();
-        return $model[$pk] ?? true;
+        return $model->save($data);
     }
 }
 if ( !function_exists('format_bytes') ) {
