@@ -8,8 +8,8 @@ use Closure;
 use think\Request;
 use think\Service;
 use hutphp\service\AdminService;
-use think\middleware\SessionInit;
-use think\middleware\LoadLangPack;
+use hutphp\middleware\SessionInit;
+use hutphp\middleware\LoadLangPack;
 
 class Boot extends Service
 {
@@ -42,24 +42,29 @@ class Boot extends Service
         define('APP_PATH' , app_path());
         define('CONFIG_PATH' , config_path());
         define('PUBLIC_PATH' , public_path());
-        define('HUTCMS_PATH' , base_path() . 'hutcms' . DIRECTORY_SEPARATOR);
+
         define('RUNTIME_PATH' , runtime_path());
         define('ROOT_PATH' , root_path());
         define('CHARSET' , 'utf-8');
         define('DS' , DIRECTORY_SEPARATOR);
-        $this->loadLang();
-        [$ds , $base] = [DIRECTORY_SEPARATOR , $this->app->getBasePath()];
+        $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
+        $this->app->lang->load(__DIR__ . '/lang/en-us.php', 'en-us');
         if ( !$this->app->request->isCli() ) {
             $this->app->middleware->add(LoadLangPack::class);
             $this->app->middleware->add(SessionInit::class);
             $this->app->middleware->add(function (Request $request , Closure $next) {
                 $header = [];
-                if ( ($origin = $request->header('origin' , '*')) !== '*' ) {
-                    $header['Access-Control-Allow-Origin']      = $origin;
-                    $header['Access-Control-Allow-Methods']     = 'GET,PUT,POST,PATCH,DELETE';
-                    $header['Access-Control-Allow-Headers']     = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
-                    $header['Access-Control-Expose-Headers']    = 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
-                    $header['Access-Control-Allow-Credentials'] = 'true';
+                // CORS 跨域规则配置
+                if (($origin = $request->header('origin', '*')) !== '*') {
+                    if (is_string($hosts = $this->app->config->get('app.cors_host', []))) $hosts = str2arr($hosts);
+                    if ($this->app->config->get('app.cors_auto', 1) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
+                        $headers=$this->app->config->get('app.cors_headers', 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token,Lang,Access-Token');
+                        $header['Access-Control-Allow-Origin'] = $origin;
+                        $header['Access-Control-Allow-Methods'] = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS');
+                        $header['Access-Control-Allow-Headers'] = "Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,{$headers}";
+                        $header['Access-Control-Expose-Headers'] = $headers;
+                        $header['Access-Control-Allow-Credentials'] = 'true';
+                    }
                 }
                 if ( in_array(app()->http->getName() , app()->config->get('app.auth_app' , [])) ) {
 
@@ -84,17 +89,17 @@ class Boot extends Service
         }
     }
 
-    protected function loadLang($file = []): void
+    public static function loadLang(string|array $file = [],string $range=''): void
     {
-        $range = $this->app->lang->getLangSet();
-        $this->app->lang->load(__DIR__ . '/lang/' . strtolower($range) . '.php' , $range);
+        $range = $range?:app()->lang->getLangSet();
+        app()->lang->load(__DIR__ . '/lang/' . strtolower($range) . '.php' , $range);
         if ( !empty($file) ) {
             if ( is_array($file) ) {
                 foreach ( $file as $item ) {
-                    $this->app->lang->load($item , $range);
+                    app()->lang->load($item , $range);
                 }
             } else if ( is_string($file) ) {
-                $this->app->lang->load($file , $range);
+                app()->lang->load($file , $range);
             }
         }
     }

@@ -6,10 +6,12 @@ namespace hutphp\service;
 
 use hutphp\Service;
 use hutphp\extend\Data;
+use hutphp\helper\JWTHelper;
 
 /**
  * 系统权限管理服务
  * Class AdminService
+ *
  * @package think\admin\service
  */
 class AdminService extends Service
@@ -17,15 +19,17 @@ class AdminService extends Service
 
     /**
      * 是否已经登录
+     *
      * @return boolean
      */
     public function isLogin(): bool
     {
-        return $this->getUserId() > 0;
+        return (bool)JWTHelper::instance()->checkLogin();
     }
 
     /**
      * 是否为超级用户
+     *
      * @return boolean
      */
     public function isSuper(): bool
@@ -35,6 +39,7 @@ class AdminService extends Service
 
     /**
      * 获取超级用户账号
+     *
      * @return array
      */
     public function getSuperName(): array
@@ -44,6 +49,7 @@ class AdminService extends Service
 
     /**
      * 获取后台用户ID
+     *
      * @return integer
      */
     public function getUserId(): int
@@ -53,6 +59,7 @@ class AdminService extends Service
 
     /**
      * 获取后台用户名称
+     *
      * @return string
      */
     public function getUserName(): string
@@ -63,7 +70,9 @@ class AdminService extends Service
     /**
      * 检查指定节点授权
      * --- 需要读取缓存或扫描所有节点
+     *
      * @param null|string $node
+     *
      * @return boolean
      * @throws \ReflectionException
      */
@@ -94,7 +103,9 @@ class AdminService extends Service
 
     /**
      * 获取授权节点列表
+     *
      * @param array $checks
+     *
      * @return array
      * @throws \ReflectionException
      */
@@ -121,6 +132,7 @@ class AdminService extends Service
     /**
      * 清理节点缓存
      * 清理csrf缓存和节点缓存
+     *
      * @return $this
      */
     public function clearCache(): AdminService
@@ -132,29 +144,32 @@ class AdminService extends Service
 
     /**
      * 登陆创建sessison
+     *
      * @param $r
+     *
      * @return void
      */
     public function setSession($r)
     {
         session('user.id' , $r['id']);
         session('user.username' , $r['username']);
-        session('user.nodes' , $r['nodes']);
+        session('user.role_id' , $r['role_id']);
+        session('user.auth' , $r['auth']);
         session('user.token' , $r['token']);
-        session('user.group_id' , $r['group_id']);
     }
 
     /**
      * 登出清除session
+     *
      * @return void
      */
     public function clearSession()
     {
         session('user.id' , null);
         session('user.username' , null);
-        session('user.nodes' , null);
+        session('user.role_id' , null);
+        session('user.auth' , null);
         session('user.token' , null);
-        session('user.group_id' , null);
     }
 
 }

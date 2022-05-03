@@ -15,6 +15,7 @@ use hutphp\helper\TokenHelper;
 use hutphp\helper\DeleteHelper;
 use hutphp\helper\ValidateHelper;
 
+
 class Controller extends \stdClass
 {
     public bool       $csrf         = false;
@@ -23,16 +24,19 @@ class Controller extends \stdClass
     protected Request $request;
     /**
      * 中间件
+     *
      * @var array
      */
     protected array $middleware = [];
     /**
      * 表名
+     *
      * @var string
      */
     protected string $table = '';
     /**
      * 表主键
+     *
      * @var string
      */
     protected string $pk = '';
@@ -54,13 +58,14 @@ class Controller extends \stdClass
 
     /**
      * json返回成功
+     *
      * @param string $msg
      * @param array  $data
      * @param int    $code
      */
     public function success(string $msg = '操作成功' , array $data = [] , int $code = 0)
     {
-        $msg = $msg == '操作成功' ? lang('hutphp_success') : $msg;
+        $msg = $msg == '操作成功' || empty($msg) ? lang('hutphp_success') : $msg;
         if ( $this->csrf ) {
             TokenHelper::instance()->clear();
         }
@@ -73,13 +78,14 @@ class Controller extends \stdClass
 
     /**
      * json返回失败
+     *
      * @param string $msg
      * @param array  $data
      * @param int    $code
      */
     public function error(string $msg = '操作失败' , array $data = [] , int $code = -1)
     {
-        $msg = $msg == '操作失败' ? lang('hutphp_error') : $msg;
+        $msg = $msg == '操作失败' || empty($msg) ? lang('hutphp_error') : $msg;
         abort(
             json(
                 array_merge(['code' => $code , 'msg' => $msg] , $data)
@@ -89,6 +95,7 @@ class Controller extends \stdClass
 
     /**
      * 跳转重定向
+     *
      * @param string $url
      * @param int    $code
      */
@@ -99,6 +106,7 @@ class Controller extends \stdClass
 
     /**
      * 模板渲染
+     *
      * @param string      $tpl
      * @param array       $vars
      * @param string|null $node
@@ -113,8 +121,10 @@ class Controller extends \stdClass
 
     /**
      * 模板赋值
+     *
      * @param array|string      $name
      * @param array|string|null $value
+     *
      * @return $this
      */
     public function assign(array|string $name , array|string $value = null): Controller
@@ -141,10 +151,12 @@ class Controller extends \stdClass
 
     /**
      * 数据回调处理机制
+     *
      * @param string $name 回调方法名称
      * @param mixed  $one  回调引用参数1
      * @param mixed  $two  回调引用参数2
      * @param mixed  $thr  回调引用参数3
+     *
      * @return boolean
      */
     public function callback(string $name , &$one = [] , &$two = [] , &$thr = []): bool
@@ -176,8 +188,10 @@ class Controller extends \stdClass
 
     /**
      * 查询助手
+     *
      * @param string|Model|BaseQuery $name
      * @param null                   $input
+     *
      * @return \hutphp\helper\QueryHelper
      */
     public function query(string|Model|BaseQuery $name = '' , $input = null): QueryHelper
@@ -187,9 +201,11 @@ class Controller extends \stdClass
 
     /**
      * 模型助手
+     *
      * @param string|Model|BaseQuery $name
      * @param array                  $data
      * @param string                 $connection
+     *
      * @return \think\Model
      */
     public function _model(string|Model|BaseQuery $name , array $data = [] , string $connection = ''): \think\Model
@@ -199,9 +215,11 @@ class Controller extends \stdClass
 
     /**
      * 快捷输入并验证（ 支持 规则 # 别名 ）
+     *
      * @param array         $rules 验证规则（ 验证信息数组 ）
      * @param array|string  $type  输入方式 ( post. 或 get. )
      * @param callable|null $callable
+     *
      * @return array
      */
     protected function _vali(array $rules , array|string $type = '' , callable $callable = null): array
@@ -211,50 +229,54 @@ class Controller extends \stdClass
 
     /**
      * 快捷删除逻辑器
-     * @param string|Model|BaseQuery $dbQuery
-     * @param string                 $field 数据对象主键
-     * @param array                  $where 额外更新条件
+     *
+     * @param string|\think\Model|\think\db\BaseQuery $name
+     * @param string                                  $field 数据对象主键
+     * @param array                                   $where 额外更新条件
+     *
      * @return boolean|null
-     * @throws \think\db\exception\DbException
      */
-    protected function _delete(string|Model|BaseQuery $dbQuery , string $field = '' , array $where = []): ?bool
+    protected function _delete(string|Model|BaseQuery $name , string $field = '' , array $where = []): ?bool
     {
-        return DeleteHelper::instance()->init($dbQuery , $field , $where);
+        return DeleteHelper::instance()->init($this->_getTableName($name) , $field , $where);
     }
 
     /**
      * 快捷表单逻辑器
-     * @param string|Model|BaseQuery $dbQuery
-     * @param string                 $template 模板名称
-     * @param string                 $field    指定数据对象主键
-     * @param array                  $where    额外更新条件
-     * @param array                  $data     表单扩展数据
+     *
+     * @param string|\think\Model|\think\db\BaseQuery $name
+     * @param string                                  $template 模板名称
+     * @param string                                  $field    指定数据对象主键
+     * @param array                                   $where    额外更新条件
+     * @param array                                   $data     表单扩展数据
+     *
      * @return array|boolean
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function _form(string|Model|BaseQuery $dbQuery , string $template = '' , string $field = '' , array $where = [] , array $data = []): bool|array
+    protected function _form(string|Model|BaseQuery $name = '' , string $template = '' , string $field = '' , array $where = [] , array $data = []): bool|array
     {
-        return FormHelper::instance()->init($dbQuery , $template , $field , $where , $data);
+        return FormHelper::instance()->init($this->_getTableName($name) , $template , $field , $where , $data);
     }
 
     /**
      * 快捷更新逻辑器
-     * @param string|BaseQuery|Model $query
+     *
+     * @param string|BaseQuery|Model $name
      * @param array                  $data  表单扩展数据
      * @param string                 $field 数据对象主键
      * @param array                  $where 额外更新条件
+     *
      * @return boolean
      */
-    protected function _save(string|BaseQuery|Model $query , array $data = [] , string $field = '' , array $where = []): bool
+    protected function _save(string|BaseQuery|Model $name , array $data = [] , string $field = '' , array $where = []): bool
     {
-        return SaveHelper::instance()->init($query , $data , $field , $where);
+        return SaveHelper::instance()->init($name , $data , $field , $where);
     }
 
     /**
      * 检查表单令牌验证
+     *
      * @param boolean $return 是否返回结果
+     *
      * @return boolean
      */
     protected function _csrf(bool $return = false): bool

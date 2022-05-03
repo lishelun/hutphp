@@ -633,7 +633,7 @@ if ( !function_exists('creat_password') ) {
      * @param string $salt
      * @return string
      */
-    function creat_password(string $password , string $salt = ''): string
+    function create_password(string $password , string $salt = ''): string
     {
         return md5(md5($salt . trim($password) . $salt));
     }

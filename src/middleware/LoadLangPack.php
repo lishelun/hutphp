@@ -10,7 +10,7 @@
 // +----------------------------------------------------------------------
 declare (strict_types = 1);
 
-namespace think\middleware;
+namespace hutphp\middleware;
 
 use Closure;
 use think\App;
@@ -38,9 +38,12 @@ class LoadLangPack
 
     /**
      * 路由初始化（路由规则注册）
+     *
      * @access public
+     *
      * @param Request $request
      * @param Closure $next
+     *
      * @return Response
      */
     public function handle(Request $request , Closure $next)
@@ -56,13 +59,21 @@ class LoadLangPack
 
         $cookie_lang_set != $langset && $this->saveToCookie($this->app->cookie , $langset);
 
+        if ( $this->lang->getLangSet() != $langset ) {
+            $this->lang->switchLangSet($langset);
+            $this->saveToCookie($this->app->cookie , $langset);
+        }
+
         return $next($request);
     }
 
     /**
      * 自动侦测设置获取语言选择
+     *
      * @access protected
+     *
      * @param Request $request
+     *
      * @return string
      */
     protected function detect(Request $request): string
@@ -89,6 +100,7 @@ class LoadLangPack
                 }
             }
         }
+        if($langSet=='en') $langSet='en-us';
 
         if ( empty($this->config['allow_lang_list']) || in_array($langSet , $this->config['allow_lang_list']) ) {
             // 合法的语言
@@ -103,9 +115,12 @@ class LoadLangPack
 
     /**
      * 保存当前语言到Cookie
+     *
      * @access protected
+     *
      * @param Cookie $cookie  Cookie对象
      * @param string $langSet 语言
+     *
      * @return void
      */
     protected function saveToCookie(Cookie $cookie , string $langSet)

@@ -10,7 +10,7 @@
 // +----------------------------------------------------------------------
 declare (strict_types = 1);
 
-namespace think\middleware;
+namespace hutphp\middleware;
 
 use Closure;
 use think\App;

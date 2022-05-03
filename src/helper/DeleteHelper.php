@@ -15,7 +15,6 @@ class DeleteHelper extends Helper
      * @param string                                  $pk
      * @param array                                   $where 额外更新条件
      * @return boolean|null
-     * @throws \think\db\exception\DbException
      */
     public function init(string|BaseQuery|Model $name , string $pk = '' , array $where = []): ?bool
     {

@@ -25,12 +25,13 @@ class JWTHelper extends Helper
      * JWT检测用户登陆
      * @return array|false
      */
-    public function checkLogin()
+    public function checkLogin(): bool|array
     {
-        $token = $this->request->header('access-token');
+        $token = $this->request->header('Access-Token');
         if ( empty($token) ) {
             return false;
         }
+        if($token!=session('user.token')) return false;
         try {
             $result = $this->decode($token);
             return (array)$result->data;

@@ -9,7 +9,9 @@ use think\db\BaseQuery;
 
 /**
  * 查询处理器
+ *
  * @see \think\DbManager
+ * @mixin \think\DbManager
  */
 class QueryHelper extends Helper
 {
@@ -34,7 +36,7 @@ class QueryHelper extends Helper
      * @param array|null                    $input
      * @return $this
      */
-    public function init(string|BaseQuery|\think\Model $query , array $input = null): QueryHelper
+    public function init(string|BaseQuery|\think\Model $query , array|null $input = null): QueryHelper
     {
 
         $this->query = $this->buildQuery($query);

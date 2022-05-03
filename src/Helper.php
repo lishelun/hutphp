@@ -86,10 +86,12 @@ abstract class Helper
 
     /**
      * 获得输入数据
-     * @param array|string $data 可以为设置的数组内容也可为get|post等request类的方法名
+     *
+     * @param array|string|null $data 可以为设置的数组内容也可为get|post等request类的方法名
+     *
      * @return array
      */
-    public static function getRequestData(array|string $data = ''): array
+    public static function getRequestData(array|string|null $data = ''): array
     {
         if ( is_array($data) ) {
             return $data;

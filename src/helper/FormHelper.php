@@ -21,9 +21,6 @@ class FormHelper extends Helper
      * @param array                  $where    额外更新条件
      * @param array                  $edata    表单扩展数据
      * @return array|boolean
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function init(string|BaseQuery|Model $dbQuery , string $template = '' , string $field = '' , array $where = [] , array $edata = []): bool|array
     {
