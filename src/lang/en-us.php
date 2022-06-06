@@ -1,4 +1,16 @@
 <?php
+/*
+ *  +----------------------------------------------------------------------
+ *  | HUTCMS
+ *  +----------------------------------------------------------------------
+ *  | Copyright (c) 2022 http://hutcms.com All rights reserved.
+ *  +----------------------------------------------------------------------
+ *  | Licensed ( https://mit-license.org )
+ *  +----------------------------------------------------------------------
+ *  | Author: lishelun <lishelun@qq.com>
+ *  +----------------------------------------------------------------------
+ */
+
 return [
     'hutphp_not_auth'                        => 'Sorry, no permission to access the operation.' ,
     'hutphp_not_login'                       => 'Sorry, requiring login to obtain view permission.' ,
@@ -25,5 +37,5 @@ return [
     'hutphp_error'                           => 'Operation failed' ,
     'hutphp_user_not_login'                  => 'User not logged in' ,
     'hutphp_user_password_error'             => 'User password error' ,
-    'hutphp_token_check_error'               => 'Token check error' ,
+    'hutphp_token_check_error'               => 'Token __check error' ,
 ];

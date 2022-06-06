@@ -1,4 +1,16 @@
 <?php
+/*
+ *  +----------------------------------------------------------------------
+ *  | HUTCMS
+ *  +----------------------------------------------------------------------
+ *  | Copyright (c) 2022 http://hutcms.com All rights reserved.
+ *  +----------------------------------------------------------------------
+ *  | Licensed ( https://mit-license.org )
+ *  +----------------------------------------------------------------------
+ *  | Author: lishelun <lishelun@qq.com>
+ *  +----------------------------------------------------------------------
+ */
+
 declare (strict_types = 1);
 
 namespace hutphp\helper;
@@ -23,15 +35,17 @@ class JWTHelper extends Helper
 
     /**
      * JWT检测用户登陆
+     *
      * @return array|false
      */
     public function checkLogin(): bool|array
     {
-        $token = $this->request->header('Access-Token');
+        $field=config("app.user_check_header");
+        $token = $this->request->header($field,input($field,''));
         if ( empty($token) ) {
             return false;
         }
-        if($token!=session('user.token')) return false;
+        if ( $token != session('user.token') ) return false;
         try {
             $result = $this->decode($token);
             return (array)$result->data;
@@ -43,9 +57,12 @@ class JWTHelper extends Helper
 
     /**
      * 生成UserToken
+     *
      * @description：生成Token
+     *
      * @param array $data
      * @param int   $exp
+     *
      * @return string
      */
     public function encode(array $data , int $exp = 86400): string
@@ -54,7 +71,7 @@ class JWTHelper extends Helper
             'iss'  => $_SERVER['HTTP_HOST'] ,     //签发者
             'aud'  => $_SERVER['HTTP_HOST'] ,     //jwt所面向的用户
             'iat'  => time() ,                    //签发时间
-            'nbf'  => time() - 60 ,               //在什么时间之后该jwt才可用
+            'nbf'  => time() - 1 ,               //在什么时间之后该jwt才可用
             'exp'  => time() + $exp ,           //过期时间
             'data' => $data
         ];
@@ -63,8 +80,11 @@ class JWTHelper extends Helper
 
     /**
      * 解密Token
+     *
      * @description：解密Token
+     *
      * @param string $jwtToken
+     *
      * @return false|object
      */
     public function decode(string $jwtToken): object|bool

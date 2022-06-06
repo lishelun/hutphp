@@ -1,4 +1,16 @@
 <?php
+/*
+ *  +----------------------------------------------------------------------
+ *  | HUTCMS
+ *  +----------------------------------------------------------------------
+ *  | Copyright (c) 2022 http://hutcms.com All rights reserved.
+ *  +----------------------------------------------------------------------
+ *  | Licensed ( https://mit-license.org )
+ *  +----------------------------------------------------------------------
+ *  | Author: lishelun <lishelun@qq.com>
+ *  +----------------------------------------------------------------------
+ */
+
 namespace  hutphp\extend;
 /**
 #
@@ -1158,7 +1170,7 @@ class Parsedown
 
             foreach ($this->InlineTypes[$marker] as $inlineType)
             {
-                # check to see if the current inline type is nestable in the current context
+                # __check to see if the current inline type is nestable in the current context
 
                 if (isset($nonNestables[$inlineType]))
                 {
